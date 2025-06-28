@@ -11,18 +11,19 @@ app = Flask(__name__)
 # 環境変数からAPIキーを読み込む
 # Renderにデプロイする際は、RenderのEnvironment VariablesでGEMINI_API_KEYを設定してください。
 # ローカルで試す場合は、.envファイル（例: .env.exampleをコピーして作成）に記述するか、
-# 直接ここにAPIキーを書く（非推奨）こともできます。
+# 環境変数として直接設定することもできます。
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY環境変数が設定されていません。")
+    # デバッグ用にエラーをログに出力
+    print("WARNING: GEMINI_API_KEY環境変数が設定されていません。AI応答機能が動作しません。")
+    # raise ValueError("GEMINI_API_KEY環境変数が設定されていません。") # 本番では有効化を推奨
 
 configure(api_key=GEMINI_API_KEY)
 model = GenerativeModel('gemini-pro')
 
 # Geminiとの会話履歴を保持するためのリスト
-# 実際にはセッション管理やデータベースを使用すべきですが、今回は簡易化のためグローバル変数で保持します。
-# 複数のユーザーが同時にアクセスする場合、この方法は適切ではありません。
-# その場合は、ユーザーごとにセッションIDなどを割り当てて管理する必要があります。
+# 注意: これは簡易的な実装であり、複数のユーザーが同時にアクセスする場合、会話が混ざります。
+# 実際にはFlaskのセッション管理やデータベースを使用すべきです。
 conversation_history = []
 
 # --- Flaskルート設定 ---
@@ -46,16 +47,12 @@ def ask_gemini():
     if not user_text:
         return jsonify({"error": "No text provided"}), 400
 
+    if not GEMINI_API_KEY:
+        return jsonify({"error": "Gemini API Key is not set. Please configure it."}), 500
+
     try:
-        # Geminiへのプロンプト
-        # 面接官として振る舞うよう指示
-        prompt_parts = [
-            "あなたは日本語の就労支援面接官です。以下にユーザーが返答するので、面接の質問をしてください。",
-            "ユーザー: " + user_text,
-            "面接官: " # ここにGeminiの応答が入る
-        ]
-        
-        # 会話履歴を追加
+        # 会話履歴にユーザーの発言を追加
+        # これはグローバル変数なので、実際のアプリではセッション管理が必要です
         conversation_history.append({"role": "user", "parts": [user_text]})
         
         # Geminiに質問を送信
@@ -81,8 +78,11 @@ def ask_gemini():
         })
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error processing Gemini request: {e}")
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True) # ローカル開発時はdebug=Trueでホットリロード有効
+    # Render環境で実行されている場合、Renderが指定するポートを使用
+    # ローカル開発時はデフォルトの5000ポートを使用
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True) # debug=Trueは開発用。本番ではFalseを推奨
