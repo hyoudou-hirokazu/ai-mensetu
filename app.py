@@ -19,7 +19,7 @@ if not GEMINI_API_KEY:
     # raise ValueError("GEMINI_API_KEY環境変数が設定されていません。") # 本番では有効化を推奨
 
 configure(api_key=GEMINI_API_KEY)
-model = GenerativeModel('gemini-pro')
+model = GenerativeModel('gemini-2.5-flash')
 
 # Geminiとの会話履歴を保持するためのリスト
 # 注意: これは簡易的な実装であり、複数のユーザーが同時にアクセスする場合、会話が混ざります。
