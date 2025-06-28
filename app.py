@@ -15,10 +15,10 @@ app = Flask(__name__)
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 if not GEMINI_API_KEY:
     # デバッグ用にエラーをログに出力
-    print("WARNING: GEMINI_API_KEY環境変数が設定されていません。AI応答機能が動作しません。")
+    print("WARNING: GEMINI_API_KEY環境変数が設定されていません。AI応答機能が動作しない可能性があります。")
     # raise ValueError("GEMINI_API_KEY環境変数が設定されていません。") # 本番では有効化を推奨
 
-configure(api_key=GEMINI_API_KEY)
+# Geminiモデルの指定を gemini-2.5-flash に変更
 model = GenerativeModel('gemini-2.5-flash')
 
 # Geminiとの会話履歴を保持するためのリスト
@@ -48,7 +48,7 @@ def ask_gemini():
         return jsonify({"error": "No text provided"}), 400
 
     if not GEMINI_API_KEY:
-        return jsonify({"error": "Gemini API Key is not set. Please configure it."}), 500
+        return jsonify({"error": "Gemini API Key is not set. Please configure it in Render Environment Variables."}), 500
 
     try:
         # 会話履歴にユーザーの発言を追加
@@ -63,26 +63,37 @@ def ask_gemini():
         # Geminiの応答を会話履歴に追加
         conversation_history.append({"role": "model", "parts": [gemini_response_text]})
 
-        # gTTSで日本語音声を生成
-        tts = gTTS(text=gemini_response_text, lang='ja')
-        audio_buffer = io.BytesIO()
-        tts.save(audio_buffer)
-        audio_buffer.seek(0) # バッファの先頭に戻す
+        audio_base64 = "" # gTTSの生成結果を保持する変数を初期化
 
-        # 音声データをBase64エンコードしてJSONで返す
-        audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
-        
+        try:
+            # gTTSで日本語音声を生成
+            tts = gTTS(text=gemini_response_text, lang='ja')
+            audio_buffer = io.BytesIO()
+            tts.save(audio_buffer)
+            audio_buffer.seek(0) # バッファの先頭に戻す
+
+            # 音声データをBase64エンコード
+            audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
+            print(f"DEBUG: Successfully generated audio for text: {gemini_response_text[:50]}...") # ログ出力
+            print(f"DEBUG: Audio Base64 length: {len(audio_base64)}") # 長さも出力
+            
+        except Exception as tts_e:
+            print(f"ERROR: gTTS audio generation failed: {tts_e}")
+            # gTTS失敗時は空のBase64文字列を返す (audio_base64 は初期値のまま)
+
         return jsonify({
             "response_text": gemini_response_text,
             "audio_base64": audio_base64
         })
 
     except Exception as e:
-        print(f"Error processing Gemini request: {e}")
+        print(f"ERROR: General error in ask_gemini: {e}")
+        # Gemini API関連のエラーメッセージをより詳細にログに出力することも検討
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     # Render環境で実行されている場合、Renderが指定するポートを使用
     # ローカル開発時はデフォルトの5000ポートを使用
     port = int(os.environ.get('PORT', 5000))
+    # Flaskアプリをすべてのネットワークインターフェース (0.0.0.0) で実行
     app.run(host='0.0.0.0', port=port, debug=True) # debug=Trueは開発用。本番ではFalseを推奨
