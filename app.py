@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 
 from flask import Flask, request, render_template, jsonify
-from google.cloud import texttospeech_v1beta as texttospeech
+from google.cloud import texttospeech # ここを変更
 from google.cloud import speech_v1p1beta1 as speech
 import google.generativeai as genai
 from dotenv import load_dotenv
@@ -22,7 +22,7 @@ PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT')
 
 # Google Cloud API クライアントの初期化
 # 環境変数 GOOGLE_APPLICATION_CREDENTIALS が設定されていれば自動で認証されます
-text_to_speech_client = texttospeech.TextToSpeechClient()
+text_to_speech_client = texttospeech.TextToSpeechClient() # ここを変更
 speech_to_text_client = speech.SpeechClient()
 
 # Gemini APIキーを環境変数から取得
@@ -95,7 +95,7 @@ def start_interview():
 
     # 面接官の音声を生成
     audio_content = text_to_speech(interviewer_response_text)
-    
+
     # Base64エンコードして返す
     audio_base64 = base64.b64encode(audio_content).decode('utf-8')
     return jsonify({
