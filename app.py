@@ -160,4 +160,43 @@ def process_audio():
 
 # --- 音声処理関数 ---
 def text_to_speech(text):
-    """テキストを音声
+    """テキストを音声に変換する"""
+    input_text = texttospeech.SynthesisInput(text=text)
+    voice = texttospeech.VoiceSelectionParams(
+        language_code="ja-JP",
+        ssml_gender=texttospeech.SsmlVoiceGender.FEMALE # 女性の声
+    )
+    audio_config = texttospeech.AudioConfig(
+        audio_encoding=texttospeech.AudioEncoding.MP3
+    )
+
+    response = text_to_speech_client.synthesize_speech(
+        input=input_text, voice=voice, audio_config=audio_config
+    )
+    return response.audio_content
+
+def speech_to_text(audio_data):
+    """音声をテキストに変換する"""
+    audio = speech.RecognitionAudio(content=audio_data)
+    config = speech.RecognitionConfig(
+        encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS, # ブラウザからのフォーマットに合わせる
+        sample_rate_hertz=48000, # ブラウザからのサンプリングレートに合わせる (WebM Opusの一般的なレート)
+        language_code="ja-JP",
+        model="latest_long", # より長時間の音声を認識できるモデル
+        enable_automatic_punctuation=True # 自動句読点
+    )
+
+    try:
+        response = speech_to_text_client.recognize(config=config, audio=audio)
+        if response.results:
+            return response.results[0].alternatives[0].transcript
+        else:
+            return ""
+    except Exception as e:
+        print(f"Speech-to-Text Error: {e}")
+        return ""
+
+if __name__ == '__main__':
+    # Cloud Run のデプロイ時に使用されるポート
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
