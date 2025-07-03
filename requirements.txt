@@ -1,3 +1,4 @@
-Flask==2.3.2
-google-generativeai==0.3.0
-gTTS==2.4.0
+Flask
+google-cloud-speech
+google-generativeai
+gtts
