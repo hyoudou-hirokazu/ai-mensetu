@@ -8,25 +8,30 @@ from gtts import gTTS
 import base64
 import io
 import time
+import logging # ロギングを追加
 
+# ロギング設定
+logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
 # Google Cloud プロジェクトIDの設定 (環境変数から取得、または直接記述)
-# 環境変数で設定することを推奨: export GOOGLE_CLOUD_PROJECT="your-project-id"
+# Cloud Runでは、デフォルトのサービスアカウントが使用されるため、
+# GOOGLE_APPLICATION_CREDENTIALS はローカル開発用です。
+# PROJECT_IDは不要な場合が多いですが、明示的に設定するなら環境変数から取得します。
+# 例: export GOOGLE_CLOUD_PROJECT="your-project-id"
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "your-gcp-project-id") # 'your-gcp-project-id' を実際のプロジェクトIDに置き換えてください
 
 # Gemini APIの初期設定
-# 環境変数 GOOGLE_API_KEY または GOOGLE_APPLICATION_CREDENTIALS が設定されていれば自動で認証されます
-# ローカル開発では GOOGLE_APPLICATION_CREDENTIALS を推奨
+# Cloud Runでは、インスタンスに割り当てられたサービスアカウントが自動的に認証に使用されます
 genai.configure()
 
 # Geminiモデルの選択
-# Flashモデルを使用します。
 GEMINI_MODEL_FLASH = "gemini-1.5-flash-latest"
 
-# ----- グローバル変数またはセッション管理で面接履歴を保持 -----
-# 本来はユーザーセッションごとに管理すべきですが、今回は簡単な例としてグローバル変数で管理
-# 実際のアプリケーションでは、ユーザーIDとセッションIDに基づいてデータベースやキャッシュで管理します
+# ----- グローバル変数で面接履歴と面接タイプを保持 -----
+# 注意: 実際のアプリケーションでは、ユーザーセッションごとにこれらの情報を安全に管理する必要があります。
+# （例: データベース、Redisキャッシュ、またはセッション管理ライブラリなど）
+# グローバル変数は、単一ユーザーでのテストやプロトタイプにのみ適しています。
 interview_history = []
 interview_type = None # 'general' or 'disability'
 
@@ -35,8 +40,6 @@ interview_type = None # 'general' or 'disability'
 # フロントエンドのHTMLを提供するルート
 @app.route('/')
 def index():
-    # ここにHTMLコンテンツを直接記述するか、templateファイル（templates/index.html）を読み込む
-    # まずはシンプルなHTMLで動作確認
     html_content = """
     <!DOCTYPE html>
     <html lang="ja">
@@ -45,44 +48,88 @@ def index():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>AI 面接練習</title>
         <style>
-            body { font-family: sans-serif; margin: 20px; }
-            #controls button { margin: 5px; padding: 10px 20px; font-size: 16px; }
-            #output { margin-top: 20px; padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9; min-height: 100px; }
-            #feedback { margin-top: 20px; padding: 15px; border: 1px solid #cceeff; background-color: #e6f7ff; min-height: 50px; }
-            .message { margin-bottom: 10px; }
-            .ai-message { color: blue; }
-            .user-message { color: green; }
-            .thinking { font-style: italic; color: gray; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
+            h1 { color: #2c3e50; text-align: center; margin-bottom: 30px; }
+            .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+            .controls-group { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; }
+            .controls-group label, .controls-group select { font-size: 16px; }
+            .controls-group button {
+                padding: 12px 25px;
+                font-size: 16px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.2s ease;
+                color: #fff;
+            }
+            #startButton { background-color: #28a745; }
+            #startButton:hover { background-color: #218838; transform: translateY(-2px); }
+            #recordButton { background-color: #007bff; }
+            #recordButton:hover { background-color: #0056b3; transform: translateY(-2px); }
+            #stopButton { background-color: #dc3545; }
+            #stopButton:hover { background-color: #c82333; transform: translateY(-2px); }
+            #resetButton { background-color: #6c757d; }
+            #resetButton:hover { background-color: #5a6268; transform: translateY(-2px); }
+            #recordButton:disabled, #stopButton:disabled, #startButton:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            #status { margin-top: 15px; text-align: center; font-weight: bold; color: #6c757d; }
+            #output {
+                margin-top: 25px;
+                padding: 20px;
+                border: 1px solid #e0e0e0;
+                background-color: #fafafa;
+                min-height: 200px;
+                max-height: 400px;
+                overflow-y: auto;
+                border-radius: 8px;
+            }
+            #feedback {
+                margin-top: 20px;
+                padding: 20px;
+                border: 1px solid #b3e0ff;
+                background-color: #e6f7ff;
+                min-height: 80px;
+                border-radius: 8px;
+            }
+            .message { margin-bottom: 12px; line-height: 1.6; }
+            .ai-message { color: #0056b3; font-weight: bold; }
+            .user-message { color: #28a745; }
+            .thinking { font-style: italic; color: #999; }
+            #audioPlayback { display: none; } /* デバッグ時以外は非表示 */
         </style>
     </head>
     <body>
-        <h1>AI 面接練習アプリ</h1>
+        <div class="container">
+            <h1>AI 面接練習アプリ</h1>
 
-        <div>
-            <label for="interviewType">面接タイプを選択:</label>
-            <select id="interviewType">
-                <option value="general">一般企業向け</option>
-                <option value="disability">障害者雇用向け（合理的配慮あり）</option>
-            </select>
-            <button id="startButton">面接開始</button>
-        </div>
+            <div class="controls-group">
+                <label for="interviewType">面接タイプを選択:</label>
+                <select id="interviewType">
+                    <option value="general">一般企業向け</option>
+                    <option value="disability">障害者雇用向け（合理的配慮あり）</option>
+                </select>
+                <button id="startButton">面接開始</button>
+            </div>
 
-        <div id="controls" style="margin-top: 20px;">
-            <button id="recordButton">録音開始</button>
-            <button id="stopButton" disabled>録音停止</button>
-            <button id="resetButton">リセット</button>
-        </div>
+            <div class="controls-group">
+                <button id="recordButton" disabled>録音開始</button>
+                <button id="stopButton" disabled>録音停止</button>
+                <button id="resetButton">リセット</button>
+            </div>
 
-        <div id="status" style="margin-top: 10px; color: gray;">ステータス: 準備完了</div>
-        <div id="output"></div>
-        <div id="feedback"></div>
+            <div id="status">ステータス: 準備完了</div>
+            <div id="output"></div>
+            <div id="feedback"></div>
 
-        <audio id="audioPlayback" controls style="display: none;"></audio>
+            <audio id="audioPlayback" controls style="display: none;"></audio>
 
-        <script>
+        </div> <script>
             let mediaRecorder;
             let audioChunks = [];
             let interviewStarted = false;
+            let audioContext = null; // AudioContext for better audio handling
 
             const recordButton = document.getElementById('recordButton');
             const stopButton = document.getElementById('stopButton');
@@ -100,9 +147,15 @@ def index():
                     alert('面接を開始してください。');
                     return;
                 }
+                statusDiv.textContent = 'ステータス: マイクへのアクセスを要求中...';
                 try {
+                    // AudioContextの初期化（一度だけ）
+                    if (!audioContext) {
+                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' }); // opus codecを明示
                     audioChunks = [];
 
                     mediaRecorder.ondataavailable = event => {
@@ -110,6 +163,10 @@ def index():
                     };
 
                     mediaRecorder.onstop = async () => {
+                        statusDiv.textContent = 'ステータス: 録音停止。AIが応答中...';
+                        recordButton.disabled = true; // 録音停止後は無効化
+                        stopButton.disabled = true;
+
                         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                         const reader = new FileReader();
                         reader.readAsDataURL(audioBlob);
@@ -125,34 +182,55 @@ def index():
                     stopButton.disabled = false;
                 } catch (error) {
                     console.error('マイクアクセスエラー:', error);
-                    statusDiv.textContent = 'ステータス: マイクアクセスに失敗しました。';
+                    statusDiv.textContent = 'ステータス: マイクアクセスに失敗しました。マイクを許可してください。';
                     alert('マイクへのアクセスを許可してください。');
+                    recordButton.disabled = false; // エラー時は録音再開可能に
+                    stopButton.disabled = true;
                 }
             };
 
             stopButton.onclick = () => {
-                mediaRecorder.stop();
-                statusDiv.textContent = 'ステータス: 録音停止。AIが応答中...';
-                recordButton.disabled = true;
-                stopButton.disabled = true;
-                outputDiv.innerHTML += '<div class="message user-message">あなた: (録音中...)</div>';
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    // mediaRecorder.onstop でステータスとボタンが更新される
+                }
             };
 
+            // 音声再生関数
             async function playAudio(base64Audio) {
-                const audioBlob = await fetch(`data:audio/mp3;base64,${base64Audio}`).then(res => res.blob());
-                const audioUrl = URL.createObjectURL(audioBlob);
-                audioPlayback.src = audioUrl;
-                audioPlayback.load();
-                audioPlayback.play();
-                audioPlayback.onended = () => {
+                try {
+                    const audioBlob = await fetch(`data:audio/mp3;base64,${base64Audio}`).then(res => res.blob());
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPlayback.src = audioUrl;
+                    audioPlayback.load(); // 音源をロード
+
+                    // 音声再生が始まる前に、一旦ボタンを有効に戻す
+                    // これで、音声再生に失敗しても次の録音に進めるようになります
+                    statusDiv.textContent = 'ステータス: AIが応答中... (再生待ち)';
+                    recordButton.disabled = false; // ここで録音ボタンを有効に戻す！
+
+                    // 音声再生を開始
+                    // Promiseを返すので、再生完了やエラーを待つことができる
+                    await audioPlayback.play();
+                    console.log('Audio playback started.'); // デバッグ用
+
+                    // 再生が完了したらステータスを更新
                     statusDiv.textContent = 'ステータス: 準備完了。録音を開始できます。';
-                    recordButton.disabled = false;
-                };
+                    recordButton.disabled = false; // 再度有効化（念のため）
+
+                } catch (error) {
+                    console.error('音声再生エラー:', error);
+                    statusDiv.textContent = 'ステータス: 音声再生エラー。手動で録音開始ボタンを押してください。';
+                    recordButton.disabled = false; // エラーでも有効に
+                    // alert('音声の再生中にエラーが発生しました。ブラウザのコンソールを確認してください。');
+                }
             }
+
 
             // --- Flaskバックエンドとの通信 ---
             async function sendAudioToServer(base64Audio) {
                 try {
+                    outputDiv.innerHTML += '<div class="message user-message">あなた: <span class="thinking">(テキスト変換中...)</span></div>';
                     const response = await fetch('/interview', {
                         method: 'POST',
                         headers: {
@@ -162,25 +240,44 @@ def index():
                     });
 
                     const data = await response.json();
+                    
+                    // ユーザーの回答テキストを更新
+                    const lastUserMessage = outputDiv.querySelector('.user-message:last-child');
+                    if (lastUserMessage && data.user_response_text) {
+                        lastUserMessage.innerHTML = `あなた: ${data.user_response_text}`;
+                    } else if (data.user_response_text) {
+                        outputDiv.innerHTML += `<div class="message user-message">あなた: ${data.user_response_text}</div>`;
+                    }
+                    outputDiv.scrollTop = outputDiv.scrollHeight; // スクロール
+
                     if (response.ok) {
                         outputDiv.innerHTML += `<div class="message ai-message">面接官: ${data.ai_response_text}</div>`;
                         feedbackDiv.innerHTML = `<div class="message">フィードバック: ${data.feedback_text}</div>`;
-                        await playAudio(data.ai_response_audio);
+                        outputDiv.scrollTop = outputDiv.scrollHeight; // スクロール
+
+                        await playAudio(data.ai_response_audio); // 音声再生が完了するまで待機
+                        // playAudio内でボタン再有効化とステータス更新が行われる
                     } else {
                         outputDiv.innerHTML += `<div class="message" style="color: red;">エラー: ${data.error}</div>`;
                         statusDiv.textContent = 'ステータス: エラーが発生しました。';
                         recordButton.disabled = false; // エラー時は録音再開可能に
+                        outputDiv.scrollTop = outputDiv.scrollHeight; // スクロール
                     }
                 } catch (error) {
                     console.error('サーバー通信エラー:', error);
                     outputDiv.innerHTML += `<div class="message" style="color: red;">通信エラー: ${error.message}</div>`;
                     statusDiv.textContent = 'ステータス: 通信エラーが発生しました。';
                     recordButton.disabled = false; // エラー時は録音再開可能に
+                    outputDiv.scrollTop = outputDiv.scrollHeight; // スクロール
                 }
             }
 
             // --- 面接開始/リセット機能 ---
             startButton.onclick = async () => {
+                if (interviewStarted) {
+                    alert('面接はすでに開始されています。リセットする場合は「リセット」ボタンを押してください。');
+                    return;
+                }
                 interviewType = interviewTypeSelect.value;
                 statusDiv.textContent = 'ステータス: 面接を開始します...';
                 outputDiv.innerHTML = '';
@@ -200,7 +297,8 @@ def index():
                     const data = await response.json();
                     if (response.ok) {
                         outputDiv.innerHTML += `<div class="message ai-message">面接官: ${data.ai_response_text}</div>`;
-                        await playAudio(data.ai_response_audio);
+                        outputDiv.scrollTop = outputDiv.scrollHeight; // スクロール
+                        await playAudio(data.ai_response_audio); // 最初の質問を再生
                         interviewStarted = true;
                         recordButton.disabled = false; // 最初の質問が来たら録音開始可能に
                         statusDiv.textContent = 'ステータス: 面接中。最初の質問が来ました。';
@@ -208,16 +306,21 @@ def index():
                         outputDiv.innerHTML += `<div class="message" style="color: red;">面接開始エラー: ${data.error}</div>`;
                         statusDiv.textContent = 'ステータス: 面接開始に失敗しました。';
                         startButton.disabled = false;
+                        recordButton.disabled = true;
                     }
                 } catch (error) {
                     console.error('面接開始通信エラー:', error);
                     outputDiv.innerHTML += `<div class="message" style="color: red;">面接開始通信エラー: ${error.message}</div>`;
                     statusDiv.textContent = 'ステータス: 面接開始通信エラー。';
                     startButton.disabled = false;
+                    recordButton.disabled = true;
                 }
             };
 
             resetButton.onclick = async () => {
+                if (!confirm('面接履歴をリセットしますか？')) {
+                    return;
+                }
                 interviewStarted = false;
                 outputDiv.innerHTML = '';
                 feedbackDiv.innerHTML = '';
@@ -225,6 +328,13 @@ def index():
                 recordButton.disabled = true;
                 stopButton.disabled = true;
                 startButton.disabled = false;
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                }
+                if (audioPlayback) {
+                    audioPlayback.pause();
+                    audioPlayback.currentTime = 0;
+                }
                 await fetch('/reset_interview', { method: 'POST' }); // バックエンドもリセット
             };
         </script>
@@ -241,11 +351,13 @@ def start_interview():
     data = request.json
     interview_type = data.get('interview_type', 'general') # デフォルトは一般企業向け
 
+    app.logger.info(f"面接タイプ: {interview_type} で面接を開始します。")
+
     try:
         if interview_type == 'general':
-            initial_prompt = "あなたは株式会社〇〇の面接官です。これから応募者に対して面接を行います。最初の質問をしてください。面接官として、常に丁寧な言葉遣いで、客観的かつ具体的に質問してください。フィードバックはまだ不要です。"
+            initial_prompt = "あなたは株式会社〇〇の面接官です。これから応募者に対して面接を行います。最初の質問をしてください。面接官として、常に丁寧な言葉遣いで、客観的かつ具体的に質問してください。フィードバックはまだ不要です。質問以外の情報は含めないでください。"
         else: # 'disability'
-            initial_prompt = "あなたは株式会社〇〇の面接官です。障害者雇用枠の応募者に対して面接を行います。最初の質問をしてください。障害特性や合理的配慮について理解を示しつつ、丁寧な言葉遣いで、客観的かつ具体的に質問してください。フィードバックはまだ不要です。"
+            initial_prompt = "あなたは株式会社〇〇の面接官です。障害者雇用枠の応募者に対して面接を行います。最初の質問をしてください。障害特性や合理的配慮について理解を示しつつ、丁寧な言葉遣いで、客観的かつ具体的に質問してください。フィードバックはまだ不要です。質問以外の情報は含めないでください。"
 
         model = genai.GenerativeModel(GEMINI_MODEL_FLASH)
         # 履歴をクリアした状態で最初の質問を生成
@@ -254,6 +366,7 @@ def start_interview():
             generation_config=genai.types.GenerationConfig(temperature=0.7)
         )
         ai_response_text = response.candidates[0].content.parts[0].text
+        app.logger.info(f"最初のAI質問: {ai_response_text}")
 
         # 履歴に追加
         interview_history.append({"role": "user", "parts": [initial_prompt]})
@@ -263,136 +376,4 @@ def start_interview():
         tts = gTTS(text=ai_response_text, lang='ja', slow=True) # ゆっくり目の日本語音声
         audio_buffer = io.BytesIO()
         tts.save(audio_buffer)
-        audio_buffer.seek(0)
-        ai_response_audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
-
-        return jsonify({
-            'ai_response_text': ai_response_text,
-            'ai_response_audio': ai_response_audio_base64,
-            'feedback_text': "面接が開始されました。最初の質問です。"
-        })
-
-    except Exception as e:
-        app.logger.error(f"面接開始エラー: {e}", exc_info=True)
-        return jsonify({'error': f'面接開始時にエラーが発生しました: {str(e)}'}), 500
-
-# 面接リセット時のエンドポイント
-@app.route('/reset_interview', methods=['POST'])
-def reset_interview():
-    global interview_history, interview_type
-    interview_history = []
-    interview_type = None
-    return jsonify({'status': '面接履歴がリセットされました。'})
-
-
-# 面接の質問と応答処理のエンドポイント
-@app.route('/interview', methods=['POST'])
-def interview_endpoint():
-    data = request.json
-    audio_data_base64 = data['audio_data']
-    
-    if not interview_history:
-        return jsonify({'error': '面接が開始されていません。先に面接を開始してください。'}), 400
-
-    try:
-        # 1. 音声テキスト化 (Speech-to-Text)
-        audio_content = base64.b64decode(audio_data_base64)
-        
-        speech_client = speech.SpeechClient()
-        audio = speech.RecognitionAudio(content=audio_content)
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS, # ブラウザからの録音形式
-            sample_rate_hertz=48000, # ブラウザのデフォルトレートに合わせて調整
-            language_code="ja-JP",
-            model="default" # デフォルトモデルを使用
-        )
-
-        app.logger.info("Speech-to-Text APIにリクエストを送信中...")
-        response = speech_client.recognize(config=config, audio=audio)
-        user_response_text = ""
-        if response.results:
-            user_response_text = response.results[0].alternatives[0].transcript
-            app.logger.info(f"ユーザーの回答: {user_response_text}")
-        else:
-            user_response_text = "（音声認識できませんでした）"
-            app.logger.warning("Speech-to-Textで音声が認識できませんでした。")
-
-        # 履歴に追加
-        interview_history.append({"role": "user", "parts": [f"応募者: {user_response_text}"]})
-
-        # 2. Gemini APIによる次の質問とフィードバックの生成
-        model = genai.GenerativeModel(GEMINI_MODEL_FLASH)
-        
-        # 面接タイプに応じたプロンプト調整
-        feedback_instruction = ""
-        if interview_type == 'general':
-            feedback_instruction = "この回答に対して、面接官として客観的かつ具体的にフィードバックを行ってください（文字数制限なし）。その上で、次の面接官としての質問を生成してください。質問は自然で、会話の流れに沿ったものにしてください。フィードバックと質問は必ず分けて提示し、それぞれの開始に`[フィードバック]`と`[質問]`というマーカーを付けてください。"
-        else: # 'disability'
-            feedback_instruction = "この回答に対して、面接官として障害特性と合理的配慮に配慮しつつ、客観的かつ具体的にフィードバックを行ってください（文字数制限なし）。その上で、次の面接官としての質問を生成してください。質問は、応募者の障害特性や合理的配慮への理解を示す形で、自然で会話の流れに沿ったものにしてください。フィードバックと質問は必ず分けて提示し、それぞれの開始に`[フィードバック]`と`[質問]`というマーカーを付けてください。"
-
-        # 会話履歴をGeminiに渡して、文脈に応じた応答を生成
-        # プロンプトの最後にフィードバックと次の質問の指示を追加
-        current_conversation = interview_history + [{"role": "user", "parts": [feedback_instruction]}]
-
-        app.logger.info("Gemini APIに質問とフィードバックのリクエストを送信中...")
-        gemini_response = model.generate_content(
-            contents=current_conversation,
-            generation_config=genai.types.GenerationConfig(temperature=0.7)
-        )
-        ai_full_response_text = gemini_response.candidates[0].content.parts[0].text
-        app.logger.info(f"Geminiからのフル応答: {ai_full_response_text}")
-
-        # Geminiからの応答をフィードバックと次の質問に分割
-        feedback_start_tag = "[フィードバック]"
-        question_start_tag = "[質問]"
-        
-        feedback_text = "フィードバックを生成できませんでした。"
-        ai_response_text = "次の質問を生成できませんでした。"
-
-        if feedback_start_tag in ai_full_response_text and question_start_tag in ai_full_response_text:
-            feedback_index = ai_full_response_text.find(feedback_start_tag)
-            question_index = ai_full_response_text.find(question_start_tag)
-
-            if feedback_index < question_index: # フィードバックが先にくる場合
-                feedback_text = ai_full_response_text[feedback_index + len(feedback_start_tag):question_index].strip()
-                ai_response_text = ai_full_response_text[question_index + len(question_start_tag):].strip()
-            else: # 質問が先にくる、または順序が逆の場合も考慮
-                # このケースは想定外だが、念のため両方のパターンをチェック
-                feedback_text = "Geminiからの応答解析に失敗しました。フィードバックの開始タグが見つかりません。"
-                ai_response_text = "Geminiからの応答解析に失敗しました。質問の開始タグが見つかりません。"
-                app.logger.warning("Gemini応答のタグ解析順序が想定と異なりました。")
-        else:
-            # タグが見つからない場合、応答全体をフィードバックとして処理し、次の質問はなしとするか、デフォルトを返す
-            feedback_text = ai_full_response_text # 全体をフィードバックとして表示
-            ai_response_text = "（面接官：次の質問はありません。面接を終了します。）" # 質問がない場合のメッセージ
-            app.logger.warning("Gemini応答でフィードバックまたは質問のタグが見つかりませんでした。")
-            
-        # 履歴に追加 (モデルからの応答は、次にユーザーの入力を促す質問のみを想定)
-        interview_history.append({"role": "model", "parts": [ai_response_text]})
-
-
-        # 3. 音声合成 (gTTS)
-        tts = gTTS(text=ai_response_text, lang='ja', slow=True) # ゆっくり目の日本語音声
-        audio_buffer = io.BytesIO()
-        tts.save(audio_buffer)
-        audio_buffer.seek(0)
-        ai_response_audio_base64 = base64.b64encode(audio_buffer.read()).decode('utf-8')
-
-        return jsonify({
-            'user_response_text': user_response_text,
-            'ai_response_text': ai_response_text,
-            'feedback_text': feedback_text,
-            'ai_response_audio': ai_response_audio_base64
-        })
-
-    except Exception as e:
-        app.logger.error(f"面接処理中にエラーが発生しました: {e}", exc_info=True)
-        return jsonify({'error': f'面接処理中にエラーが発生しました: {str(e)}'}), 500
-
-
-# アプリケーションの実行
-if __name__ == '__main__':
-    # Flaskのデバッグモードは開発時に便利ですが、本番環境では無効にしてください
-    # app.run(debug=True, port=8080)
-    # Cloud Runは環境変数PORTを使用するため、本番環境では以下のようになります
-    app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 8080))
+        audio_buffer.
