@@ -1,4 +1,5 @@
 Flask
-google-cloud-speech
-google-generativeai
-gtts
+google-cloud-texttospeech==2.15.0 # 特定のバージョンを指定
+google-cloud-speech==2.23.0    # Speech-to-Textも合わせてバージョンを固定
+google-generativeai==0.7.1     # Gemini APIもバージョンを固定
+python-dotenv
