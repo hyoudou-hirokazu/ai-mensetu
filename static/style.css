@@ -1,0 +1,191 @@
+/* static/style.css */
+
+body {
+    font-family: 'Segoe UI', 'BIZ UDGothic', 'Meiryo UI', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 上部に寄せる */
+    min-height: 100vh;
+}
+
+.container {
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    width: 100%;
+    margin-top: 20px; /* 上部に少し余白 */
+}
+
+h1, h2 {
+    color: #0056b3;
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.settings, .interview-area, .feedback-area, .conversation-history {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #fdfdfd;
+}
+
+.settings label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.settings select, .settings button {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.settings button {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+    margin-left: 10px;
+}
+
+.settings button:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.settings button:disabled {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.interview-area .label {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.response-box {
+    border: 1px solid #d0d0d0;
+    background-color: #ffffff;
+    min-height: 50px;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    word-wrap: break-word; /* 長いテキストの折り返し */
+    white-space: pre-wrap; /* 改行を維持 */
+}
+
+.user-input-area button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#record-btn {
+    background-color: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+}
+
+#record-btn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+#record-btn:disabled {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    cursor: not-allowed;
+}
+
+#stop-record-btn {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+}
+
+#stop-record-btn:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+#stop-record-btn:disabled {
+    background-color: #cccccc;
+    border-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.feedback-area #feedback-log {
+    border: 1px dashed #d0d0d0;
+    padding: 15px;
+    min-height: 80px;
+    background-color: #fffacd; /* 薄い黄色 */
+    border-radius: 5px;
+}
+
+.feedback-area #feedback-log p {
+    margin-bottom: 8px;
+}
+
+.conversation-history #history-log {
+    max-height: 300px; /* 高さ制限 */
+    overflow-y: auto; /* スクロール可能に */
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.conversation-history .entry {
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.conversation-history .entry:last-child {
+    border-bottom: none;
+}
+
+.conversation-history .entry .role {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.conversation-history .entry.ai .role {
+    color: #007bff;
+}
+
+.conversation-history .entry.user .role {
+    color: #28a745;
+}
+
+audio {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* レスポンシブデザインの調整 */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    .settings button, .user-input-area button {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
