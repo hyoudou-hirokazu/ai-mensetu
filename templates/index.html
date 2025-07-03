@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 面接練習アプリ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>AI 面接練習アプリ</h1>
+
+        <div class="settings">
+            <label for="interview-type">面接の種類:</label>
+            <select id="interview-type">
+                <option value="general">一般企業向け</option>
+                <option value="disability">障害者雇用向け（合理的配慮あり）</option>
+            </select>
+            <button id="start-interview-btn">面接を開始</button>
+        </div>
+
+        <div class="interview-area">
+            <div class="ai-response-area">
+                <p class="label">AI:</p>
+                <div id="ai-response" class="response-box">
+                    <p id="ai-message">面接を開始します。準備ができたら「録音開始」ボタンを押してください。</p>
+                    <audio id="ai-audio" controls style="display: none;"></audio>
+                </div>
+            </div>
+
+            <div class="user-input-area">
+                <p class="label">あなた:</p>
+                <div class="response-box">
+                    <p id="user-transcript"></p>
+                </div>
+                <button id="record-btn" disabled>録音開始</button>
+                <button id="stop-record-btn" disabled>録音停止</button>
+            </div>
+        </div>
+
+        <div class="feedback-area">
+            <h2>フィードバック</h2>
+            <div id="feedback-log">
+                <p id="current-feedback">面接中はフィードバックが表示されます。</p>
+            </div>
+        </div>
+
+        <div class="conversation-history">
+            <h2>会話履歴</h2>
+            <div id="history-log">
+                </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
