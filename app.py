@@ -6,7 +6,7 @@ from datetime import datetime
 
 from flask import Flask, request, render_template, jsonify
 from google.cloud import texttospeech
-from google.cloud import speech_v1p1beta1 as speech # speech_v1p1beta1 as speech を使用
+from google.cloud import speech_v1p1beta1 as speech # speech_v1p1beta1 を使用
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -32,8 +32,8 @@ if not API_KEY:
 genai.configure(api_key=API_KEY)
 
 # Geminiモデルの初期化
-# ★ここが gemini-1.5-flash に変更されています★
-model = genai.GenerativeModel('gemini-2.5-flash')
+# ★ここを gemini-2.5-flash-lite-preview-06-17 に変更しました★
+model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-06-17')
 # 会話履歴を管理するためのチャットセッションを開始
 chat = model.start_chat(history=[])
 
