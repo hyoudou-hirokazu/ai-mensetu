@@ -16,7 +16,6 @@ load_dotenv()
 app = Flask(__name__)
 
 # Google Cloud プロジェクトID
-# 環境変数 GOOGLE_CLOUD_PROJECT から取得
 PROJECT_ID = os.environ.get('GOOGLE_CLOUD_PROJECT')
 if not PROJECT_ID:
     raise ValueError("GOOGLE_CLOUD_PROJECT 環境変数が設定されていません。")
@@ -65,7 +64,7 @@ def start_interview():
                 "5. 面接の最後に、「面接は終了です」と明確に伝えてください。\n"
                 "6. 応募者の発言内容が把握できない場合、明確化のための質問を行ってください。\n"
                 "7. 質問のトーンは常にプロフェッショナルで、応募者を尊重するものである必要があります。\n"
-                "8. 長い会話を避けるために、簡潔な質問を心がけてください。\n"
+                "8. 長い会話を避けるために、簡潔な質問を心がけてください。箇条書きや特殊文字（例: *）を使用しないでください。\n" # ★追加★
                 "9. 応募者の回答が具体的でなかったり、深掘りが必要な場合は、具体的なエピソードや詳細を尋ねるようにしてください。\n"
                 "10. 応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
                 "11. 応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
@@ -81,7 +80,7 @@ def start_interview():
                 "5. 面接の最後に、「面接は終了です」と明確に伝えてください。\n"
                 "6. 応募者の発言内容が把握できない場合、明確化のための質問を行ってください。\n"
                 "7. 技術的な概念や実装について、具体的な知識を問う質問をしてください。\n"
-                "8. 長い会話を避けるために、簡潔な質問を心がけてください。\n"
+                "8. 長い会話を避けるために、簡潔な質問を心がけてください。箇条書きや特殊文字（例: *）を使用しないでください。\n" # ★追加★
                 "9. 応募者の回答が抽象的だったり、理解が不足している場合は、追加の質問で深掘りしてください。\n"
                 "10. 応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
                 "11. 応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
@@ -145,10 +144,13 @@ def process_audio():
                 'recognized_text': "",
                 'message': 'すみません、あなたの音声を認識できませんでした。もう一度お願いします。',
                 'audio': "",
-                'feedback': '音声が認識されませんでした。' # ★追加★
+                'feedback': '音声が認識されませんでした。'
             })
 
-        chat_response = chat.send_message(recognized_text)
+        # Geminiモデルにユーザーの応答を送信し、次の質問を生成させる
+        # ここでAIの応答を簡潔にするための指示を追加
+        chat_response_prompt = f"応募者の回答: {recognized_text}\n\n面接官として、この回答に基づいて次の質問を簡潔に、かつ箇条書きや特殊文字（例: *）を使用せずにしてください。" # ★変更★
+        chat_response = chat.send_message(chat_response_prompt) # ★変更★
         ai_text = chat_response.text
 
         synthesis_input = texttospeech.SynthesisInput(text=ai_text)
@@ -164,13 +166,10 @@ def process_audio():
         )
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
-        # ★フィードバックを生成し、レスポンスに含める★
-        # ここでは仮のフィードバックメッセージを生成していますが、
-        # 実際にはGeminiモデルにユーザーの回答を分析させて具体的なフィードバックを生成するロジックが必要です。
-        # 例: feedback_prompt = f"以下の応募者の回答について、面接官として改善点や良い点を簡潔にフィードバックしてください。\n回答: {recognized_text}"
-        #     feedback_response = model.generate_content(feedback_prompt)
-        #     feedback_text = feedback_response.text
-        feedback_text = f"（AIフィードバック: 「{recognized_text[:20]}...」について分析中。より具体的なエピソードを交えると良いでしょう。）"
+        # ★フィードバックを生成するロジックを強化★
+        feedback_prompt = f"以下の応募者の回答について、面接官として改善点や良い点を簡潔に、箇条書きや特殊文字（例: *）を使用せずにフィードバックしてください。\n回答: {recognized_text}"
+        feedback_response = model.generate_content(feedback_prompt)
+        feedback_text = feedback_response.text
 
 
         return jsonify({
@@ -178,12 +177,12 @@ def process_audio():
             'recognized_text': recognized_text,
             'message': ai_text,
             'audio': audio_content_base64,
-            'feedback': feedback_text # ★フィードバックを含める★
+            'feedback': feedback_text
         })
 
     except Exception as e:
         print(f"Error in process_audio: {e}")
-        return jsonify({'status': 'error', 'error': str(e), 'message': '音声の処理中にエラーが発生しました。', 'recognized_text': '', 'feedback': 'フィードバックの取得中にエラーが発生しました。'}) # ★エラー時もfeedbackを含める★
+        return jsonify({'status': 'error', 'error': str(e), 'message': '音声の処理中にエラーが発生しました。', 'recognized_text': '', 'feedback': 'フィードバックの取得中にエラーが発生しました。'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
