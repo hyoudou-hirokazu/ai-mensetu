@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiMessageElem = document.getElementById('ai-message');
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
-    const statusMessageElem = document.getElementById('status-message'); // この要素が見つかるようindex.htmlを修正しました
+    const statusMessageElem = document.getElementById('status-message');
     const feedbackLogElem = document.getElementById('feedback-log');
     const currentFeedbackElem = document.getElementById('current-feedback');
     const historyLogElem = document.getElementById('history-log');
@@ -26,10 +26,10 @@ document.addEventListener('DOMContentLoaded', () => {
         aiAudioElem.style.display = 'none';
         aiAudioElem.src = '';
         userTranscriptElem.textContent = '';
-        statusMessageElem.textContent = '準備完了'; // ここでエラーが解消されるはずです
+        statusMessageElem.textContent = '準備完了';
         currentFeedbackElem.textContent = '面接中はフィードバックが表示されます。';
         historyLogElem.innerHTML = ''; // 履歴をクリア
-        feedbackLogElem.innerHTML = '<p id="current-feedback">面接中はフィードバックが表示されます。</p>'; // フィードバックをクリア
+        // feedbackLogElem.innerHTML = '<p id="current-feedback">面接中はフィードバックが表示されます。</p>'; // この行は currentFeedbackElem で管理するため不要
     }
 
     resetUI(); // ページ読み込み時にUIを初期化
@@ -110,10 +110,11 @@ document.addEventListener('DOMContentLoaded', () => {
             userTranscriptElem.textContent = '（録音中...）';
             aiMessageElem.textContent = 'AI: （あなたの回答を待っています）'; // AIメッセージを一時的にクリア
             aiAudioElem.style.display = 'none'; // AI音声プレーヤーを非表示
+            currentFeedbackElem.textContent = 'フィードバックを生成中...'; // ★追加★
         } catch (error) {
             console.error('マイクアクセスエラー:', error);
             statusMessageElem.textContent = 'マイクへのアクセスが拒否されました。';
-            recordBtn.disabled = false; // 録音開始を再度可能にする
+            recordBtn.disabled = false;
             stopRecordBtn.disabled = true;
         }
     });
@@ -123,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mediaRecorder && isRecording) {
             mediaRecorder.stop();
             isRecording = false;
-            recordBtn.disabled = true; // 送信中は無効
-            stopRecordBtn.disabled = true; // 送信中は無効
+            recordBtn.disabled = true;
+            stopRecordBtn.disabled = true;
             statusMessageElem.textContent = '音声を処理中...';
         }
     });
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 userTranscriptElem.textContent = data.recognized_text;
                 aiMessageElem.textContent = data.message;
                 aiAudioElem.src = 'data:audio/mp3;base64,' + data.audio;
-                aiAudioElem.style.display = 'block'; // AI音声プレーヤーを表示
+                aiAudioElem.style.display = 'block';
                 aiAudioElem.play();
                 statusMessageElem.textContent = 'AIが応答しました。';
 
@@ -154,8 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 addHistory('あなた', data.recognized_text);
                 addHistory('AI', data.message);
 
-                // TODO: ここでフィードバックも表示するロジックを追加
-                // 例: currentFeedbackElem.textContent = data.feedback || 'フィードバックはありません。';
+                // ★フィードバックを表示するロジックを追加★
+                currentFeedbackElem.textContent = data.feedback || 'フィードバックはありません。';
 
                 // AIの音声再生が終了したら録音ボタンを再度有効にする
                 aiAudioElem.onended = () => {
@@ -167,25 +168,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 userTranscriptElem.textContent = data.recognized_text || '認識できませんでした。';
                 aiMessageElem.textContent = 'AI応答エラー: ' + (data.message || '不明なエラー');
                 statusMessageElem.textContent = 'エラーが発生しました。';
-                recordBtn.disabled = false; // エラー時も録音を再度可能に
+                recordBtn.disabled = false;
+                // ★エラー時もフィードバックを表示★
+                currentFeedbackElem.textContent = data.feedback || 'フィードバックの取得中にエラーが発生しました。';
             }
         } catch (error) {
             console.error('音声処理エラー:', error);
             statusMessageElem.textContent = '音声処理中にエラーが発生しました。';
-            recordBtn.disabled = false; // エラー時も録音を再度可能に
+            recordBtn.disabled = false;
+            currentFeedbackElem.textContent = 'フィードバックの取得中にエラーが発生しました。'; // ★追加★
         }
     }
 
     // 会話履歴に追加するヘルパー関数
     function addHistory(role, text) {
         const entryDiv = document.createElement('div');
-        entryDiv.classList.add('entry', role.toLowerCase()); // 'ai' または 'user' クラスを追加
+        entryDiv.classList.add('entry', role.toLowerCase());
         entryDiv.innerHTML = `<span class="role">${role}:</span> ${text}`;
         historyLogElem.appendChild(entryDiv);
-        // スクロールを最下部に移動
         historyLogElem.scrollTop = historyLogElem.scrollHeight;
     }
 
-    // 初期化時にも履歴をクリアする（念のため）
     historyLogElem.innerHTML = '';
 });
