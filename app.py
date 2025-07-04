@@ -33,7 +33,7 @@ genai.configure(api_key=API_KEY)
 
 # Geminiモデルの初期化
 # ★ここが gemini-1.5-flash に変更されています★
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('gemini-2.5-flash')
 # 会話履歴を管理するためのチャットセッションを開始
 chat = model.start_chat(history=[])
 
