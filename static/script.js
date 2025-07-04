@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiMessageElem = document.getElementById('ai-message');
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
-    const statusMessageElem = document.getElementById('status-message');
+    const statusMessageElem = document.getElementById('status-message'); // この要素が見つかるようindex.htmlを修正しました
     const feedbackLogElem = document.getElementById('feedback-log');
     const currentFeedbackElem = document.getElementById('current-feedback');
     const historyLogElem = document.getElementById('history-log');
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiAudioElem.style.display = 'none';
         aiAudioElem.src = '';
         userTranscriptElem.textContent = '';
-        statusMessageElem.textContent = '準備完了';
+        statusMessageElem.textContent = '準備完了'; // ここでエラーが解消されるはずです
         currentFeedbackElem.textContent = '面接中はフィードバックが表示されます。';
         historyLogElem.innerHTML = ''; // 履歴をクリア
         feedbackLogElem.innerHTML = '<p id="current-feedback">面接中はフィードバックが表示されます。</p>'; // フィードバックをクリア
