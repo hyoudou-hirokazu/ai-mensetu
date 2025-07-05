@@ -40,22 +40,22 @@ h1, h2 {
 .settings label {
     font-weight: bold;
     margin-right: 10px;
-    display: block;
+    display: block; /* ラベルをブロック要素にして改行 */
     margin-bottom: 5px;
-    margin-top: 15px;
+    margin-top: 15px; /* 各設定項目間のスペース */
 }
 
 .settings label:first-child {
-    margin-top: 0;
+    margin-top: 0; /* 最初のラベルは上マージンなし */
 }
 
-.settings select {
+.settings select, .settings input[type="text"] {
     padding: 10px 15px;
     border-radius: 5px;
     border: 1px solid #ccc;
     font-size: 1rem;
-    width: calc(100% - 30px);
-    box-sizing: border-box;
+    width: calc(100% - 30px); /* パディング分を考慮 */
+    box-sizing: border-box; /* パディングを幅に含める */
     margin-bottom: 10px;
 }
 
@@ -68,7 +68,7 @@ h1, h2 {
     transition: background-color 0.3s ease, border-color 0.3s ease;
     background-color: #007bff;
     color: white;
-    width: 100%;
+    width: 100%; /* ボタンを幅いっぱいに */
     margin-top: 20px;
 }
 
@@ -99,23 +99,6 @@ h1, h2 {
     word-wrap: break-word;
     white-space: pre-wrap;
 }
-
-/* 面接官画像コンテナのスタイル */
-.interviewer-image-container { /* ★追加★ */
-    text-align: center;
-    margin-bottom: 15px;
-}
-
-/* 面接官画像のスタイル */
-#interviewer-image { /* ★追加★ */
-    width: 120px; /* 画像の幅 */
-    height: 120px; /* 画像の高さ */
-    border-radius: 50%; /* 円形にする */
-    object-fit: cover; /* 画像がコンテナに収まるようにトリミング */
-    border: 3px solid #007bff; /* 枠線 */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 影 */
-}
-
 
 .user-input-area button {
     padding: 10px 20px;
@@ -160,26 +143,7 @@ h1, h2 {
     cursor: not-allowed;
 }
 
-#feedback-button {
-    background-color: #007bff;
-    color: white;
-    border: 1px solid #007bff;
-    margin-top: 10px;
-}
-
-#feedback-button:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
-#feedback-button:disabled {
-    background-color: #cccccc;
-    border-color: #cccccc;
-    cursor: not-allowed;
-}
-
-
-.feedback-box-style {
+.feedback-area #feedback-log {
     border: 1px dashed #d0d0d0;
     padding: 15px;
     min-height: 80px;
@@ -187,42 +151,9 @@ h1, h2 {
     border-radius: 5px;
 }
 
-/* フィードバックカテゴリのスタイル */
-.feedback-category {
-    font-weight: bold;
-    margin-top: 15px;
-    margin-bottom: 5px;
-    color: #0056b3;
-    border-bottom: 1px solid #cceeff;
-    padding-bottom: 3px;
+.feedback-area #feedback-log p {
+    margin-bottom: 8px;
 }
-
-.feedback-category:first-child {
-    margin-top: 0;
-}
-
-.feedback-example {
-    font-style: italic;
-    color: #666;
-    margin-top: 5px;
-    margin-left: 10px;
-    padding-left: 10px;
-    border-left: 2px solid #ccc;
-}
-
-.feedback-score {
-    font-size: 1.6rem; /* 少し大きく */
-    font-weight: bold;
-    color: #0056b3; /* 青系に変更して、カテゴリと差別化 */
-    background-color: #e0f2f7; /* 薄い水色の背景 */
-    border: 2px solid #007bff; /* 青い枠線 */
-    border-radius: 8px; /* 角を丸く */
-    padding: 15px 20px; /* パディングを増やす */
-    text-align: center;
-    margin-bottom: 20px; /* 下のマージンを増やす */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 軽い影 */
-}
-
 
 .conversation-history #history-log {
     max-height: 300px;
@@ -266,13 +197,9 @@ audio {
     .container {
         padding: 15px;
     }
-    .settings select, .settings button, .user-input-area button {
+    .settings select, .settings input[type="text"], .settings button, .user-input-area button {
         width: 100%;
         margin-left: 0;
         margin-top: 10px;
-    }
-    .user-input-area button {
-        margin-right: 0;
-        margin-bottom: 10px;
     }
 }
