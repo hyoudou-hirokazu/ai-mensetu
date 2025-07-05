@@ -3,6 +3,7 @@ import json
 import base64
 import time
 from datetime import datetime
+import re # 正規表現モジュールをインポート
 
 from flask import Flask, request, render_template, jsonify
 from google.cloud import texttospeech
@@ -43,9 +44,7 @@ AUDIO_ENCODING = texttospeech.AudioEncoding.MP3
 SAMPLE_RATE_HERTZ = 48000
 
 # 面接者の名前を保持するグローバル変数（名前入力がなくなったため、ダミーまたは「あなた」のような表現に）
-# voice_gender_global は synthesize_speech 関数に直接渡すため、グローバル変数は不要に
-# applicant_name_global はフィードバックプロンプトのために残す
-applicant_name_global = "あなた" # ★変更: 名前入力がなくなったため、デフォルトを「あなた」に★
+applicant_name_global = "あなた"
 
 @app.route('/')
 def index():
@@ -53,14 +52,11 @@ def index():
 
 @app.route('/start_interview', methods=['POST'])
 def start_interview():
-    global applicant_name_global # applicant_name_global はフィードバックプロンプトのために残す
+    global applicant_name_global
     try:
         data = request.json
         interview_type = data.get('interview_type', 'general')
-        # applicant_name = data.get('applicant_name', '〇〇') # ★削除★
         voice_gender = data.get('voice_gender', 'FEMALE')
-
-        # applicant_name_global = applicant_name # ★削除★
 
         chat.history.clear()
 
@@ -79,7 +75,7 @@ def start_interview():
                 "9. 応募者の回答が具体的でなかったり、深掘りが必要な場合は、具体的なエピソードや詳細を尋ねるようにしてください。\n"
                 "10. 応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
                 "11. 応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
-                f"最初の質問は「本日は面接にお越しいただきありがとうございます。本日はあなたのこれまでのご経験について、具体的に教えていただけますでしょうか。どのような業務に携わることや、どのような成果を上げられましたか？」です。" # ★変更: 名前を削除し「あなた」に★
+                f"最初の質問は「本日は面接にお越しいただきありがとうございます。本日はあなたのこれまでのご経験について、具体的に教えていただけますでしょうか。どのような業務に携わることや、どのような成果を上げられましたか？」です。"
             )
         elif interview_type == 'disability':
             initial_prompt = (
@@ -95,7 +91,7 @@ def start_interview():
                 "9. 応募者の回答が抽象的だったり、理解が不足している場合は、追加の質問で深掘りしてください。\n"
                 "10. 応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
                 "11. 応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
-                f"最初の質問は「本日は障害者雇用の面接にお越しいただきありがとうございます。まず、あなたの障害特性と、業務遂行上必要となる合理的配慮について教えていただけますでしょうか？」です。" # ★変更: 名前を削除し「あなた」に★
+                f"最初の質問は「本日は障害者雇用の面接にお越しいただきありがとうございます。まず、あなたの障害特性と、業務遂行上必要となる合理的配慮について教えていただけますでしょうか？」です。"
             )
         else:
             return jsonify({"error": "Invalid interview type"}), 400
@@ -103,7 +99,7 @@ def start_interview():
         response = chat.send_message(initial_prompt)
         ai_text = response.text
 
-        tts_response = synthesize_speech(ai_text, voice_gender) # ★変更: voice_gender_globalではなく直接渡す★
+        tts_response = synthesize_speech(ai_text, voice_gender)
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
         return jsonify({
@@ -118,12 +114,11 @@ def start_interview():
 
 @app.route('/process_audio', methods=['POST'])
 def process_audio():
-    # global applicant_name_global, voice_gender_global # ★変更: voice_gender_globalは不要に★
     try:
         data = request.json
         audio_data_base64 = data.get('audio_data')
         end_interview_prompt = data.get('end_interview_prompt')
-        voice_gender = data.get('voice_gender', 'FEMALE') # ★追加: 音声タイプを取得★
+        voice_gender = data.get('voice_gender', 'FEMALE')
 
         recognized_text = ""
         if audio_data_base64:
@@ -141,7 +136,7 @@ def process_audio():
 
         if not recognized_text and not end_interview_prompt:
             ai_text = 'すみません、あなたの音声を認識できませんでした。もう一度お願いします。'
-            tts_response = synthesize_speech(ai_text, voice_gender) # ★変更: 音声タイプを渡す★
+            tts_response = synthesize_speech(ai_text, voice_gender)
             audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
             return jsonify({
                 'status': 'success',
@@ -159,7 +154,7 @@ def process_audio():
             response = chat.send_message(chat_response_prompt)
             ai_text = response.text
 
-        tts_response = synthesize_speech(ai_text, voice_gender) # ★変更: 音声タイプを渡す★
+        tts_response = synthesize_speech(ai_text, voice_gender)
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
         return jsonify({
@@ -167,26 +162,25 @@ def process_audio():
             'recognized_text': recognized_text,
             'message': ai_text,
             'audio': audio_content_base64,
-            'feedback': '' # 面接中はフィードバックを空にする (このエンドポイントではフィードバックを返さない)
+            'feedback': ''
         })
 
     except Exception as e:
         print(f"Error in process_audio: {e}")
         return jsonify({'status': 'error', 'error': str(e), 'message': '音声の処理中にエラーが発生しました。', 'recognized_text': '', 'feedback': 'フィードバックの取得中にエラーが発生しました。'})
 
-# ★フィードバック取得エンドポイントを統一★
 @app.route('/get_feedback', methods=['POST'])
 def get_feedback():
     global applicant_name_global
     try:
         data = request.json
         conversation_history_text = data.get('conversation_history', '')
-        # final_feedback = data.get('final_feedback', False) # ★削除: 統一されたため不要★
 
         feedback_prompt = (
             f"あなたは面接練習アプリの面接官です。以下の面接履歴全体を評価し、面接における「あなた」の良かった点、改善点、総合評価を簡潔に、箇条書きや特殊文字（例: *）を使用せずにフィードバックしてください。\n"
             "改善点については、具体的な返答例を一つ含めてください。返答例は「返答例: [具体的な返答例]」の形式で記述してください。\n"
-            "各カテゴリ（良かった点、改善点、総合評価）は新しい行から始めてください。\n\n"
+            "各カテゴリ（良かった点、改善点、総合評価）は新しい行から始めてください。\n"
+            "最後に、100点満点での評価点数を「評価点数: [点数]/100」の形式で出力してください。点数は整数でお願いします。\n\n"
             "面接履歴:\n"
             f"{conversation_history_text}\n\n"
             "フィードバック:"
@@ -196,16 +190,20 @@ def get_feedback():
         feedback_response = feedback_model.generate_content(feedback_prompt)
         feedback_text = feedback_response.text
 
+        # 評価点数を抽出
+        score_match = re.search(r'評価点数:\s*(\d+)/100', feedback_text)
+        score = int(score_match.group(1)) if score_match else None
+
         return jsonify({
             'status': 'success',
-            'feedback': feedback_text
+            'feedback': feedback_text,
+            'score': score
         })
     except Exception as e:
         print(f"Error in get_feedback: {e}")
         return jsonify({'status': 'error', 'error': str(e), 'message': 'フィードバックの生成中にエラーが発生しました。'})
 
 
-# 音声合成ヘルパー関数
 def synthesize_speech(text, gender):
     """テキストを音声に変換するヘルパー関数"""
     input_text = texttospeech.SynthesisInput(text=text)
