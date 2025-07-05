@@ -1,6 +1,6 @@
 // static/script.js
 
-document.addEventListener('DOMContentLoaded', () => { // asyncキーワードを削除
+document.addEventListener('DOMContentLoaded', () => {
     const interviewTypeSelect = document.getElementById('interview-type');
     const voiceGenderSelect = document.getElementById('voice-gender');
     const startInterviewBtn = document.getElementById('start-interview-btn');
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => { // asyncキーワードを
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
-        console.log('「面接を開始」ボタンがクリックされました。'); // ★デバッグログ★
+        console.log('「面接を開始」ボタンがクリックされました。');
         resetUI(); // 新しい面接開始時にUIをリセット
         const interviewType = interviewTypeSelect.value;
         const voiceGender = voiceGenderSelect.value;
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => { // asyncキーワードを
         startInterviewBtn.disabled = true; // 面接開始中は無効化
 
         try {
-            console.log('サーバーへ /start_interview リクエストを送信中...'); // ★デバッグログ★
+            console.log('サーバーへ /start_interview リクエストを送信中...');
             const response = await fetch('/start_interview', {
                 method: 'POST',
                 headers: {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => { // asyncキーワードを
             });
 
             const data = await response.json();
-            console.log('サーバーからの応答:', data); // ★デバッグログ★
+            console.log('サーバーからの応答:', data);
 
             if (data.status === 'success') {
                 aiMessageElem.textContent = data.message;
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => { // asyncキーワードを
                 startInterviewBtn.disabled = false;
             }
         } catch (error) {
-            console.error('面接開始エラー（fetchまたはJSONパース失敗）:', error); // ★デバッグログ★
+            console.error('面接開始エラー（fetchまたはJSONパース失敗）:', error);
             aiMessageElem.textContent = 'サーバーとの通信に失敗しました。';
             statusMessageElem.textContent = 'エラーが発生しました。';
             startInterviewBtn.disabled = false;
