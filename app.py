@@ -81,7 +81,7 @@ def start_interview():
                 "9. 応募者の回答が具体的でなかったり、深掘りが必要な場合は、具体的なエピソードや詳細を尋ねるようにしてください。\n"
                 "10. 応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
                 "11. 応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
-                f"最初の質問は「{applicant_name}様、本日は面接にお越しいただきありがとうございます。本日は貴方のご経験について、具体的に教えていただけますでしょうか。どのような業務に携わることや、どのような成果を上げられたか？」です。" # ★名前を反映★
+                f"最初の質問は「{applicant_name}様、本日は面接にお越しいただきありがとうございます。本日は貴方のご経験について、具体的に教えていただけますでしょうか。どのような業務に携わることや、どのような成果を上げられたか？」です。"
             )
         elif interview_type == 'disability':
             initial_prompt = (
@@ -97,7 +97,7 @@ def start_interview():
                 "9. 応募者の回答が抽象的だったり、理解が不足している場合は、追加の質問で深掘りしてください。\n"
                 "10. 応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
                 "11. 応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。\n"
-                f"最初の質問は「{applicant_name}様、本日は障害者雇用の面接にお越しいただきありがとうございます。まず、ご自身の障害特性と、業務遂行上必要となる合理的配慮について教えていただけますでしょうか？」です。" # ★名前を反映★
+                f"最初の質問は「{applicant_name}様、本日は障害者雇用の面接にお越しいただきありがとうございます。まず、ご自身の障害特性と、業務遂行上必要となる合理的配慮について教えていただけますでしょうか？」です。"
             )
         else:
             return jsonify({"error": "Invalid interview type"}), 400
@@ -107,7 +107,7 @@ def start_interview():
         ai_text = response.text
 
         # Text-to-SpeechでAIの応答を音声に変換
-        tts_response = synthesize_speech(ai_text, voice_gender_global) # ★音声タイプを渡す★
+        tts_response = synthesize_speech(ai_text, voice_gender_global) # 音声タイプを渡す
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
         return jsonify({
@@ -165,7 +165,7 @@ def process_audio():
             response = chat.send_message(chat_response_prompt)
             ai_text = response.text
 
-        tts_response = synthesize_speech(ai_text, voice_gender_global) # ★音声タイプを渡す★
+        tts_response = synthesize_speech(ai_text, voice_gender_global) # 音声タイプを渡す
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
         # 面接中のフィードバックは返さない
@@ -174,7 +174,7 @@ def process_audio():
             'recognized_text': recognized_text,
             'message': ai_text,
             'audio': audio_content_base64,
-            'feedback': '' # ★面接中はフィードバックを空にする★
+            'feedback': '' # 面接中はフィードバックを空にする
         })
 
     except Exception as e:
@@ -216,7 +216,7 @@ def synthesize_speech(text, gender):
     
     # 性別に基づいて音声を選択
     if gender == "MALE":
-        voice_name = "ja-JP-Wavenet-B" # 男性声の例
+        voice_name = "ja-JP-Wavenet-D" # 男性声の例をDに変更
         ssml_gender = texttospeech.SsmlVoiceGender.MALE
     else: # デフォルトは女性
         voice_name = "ja-JP-Wavenet-A" # 女性声の例
