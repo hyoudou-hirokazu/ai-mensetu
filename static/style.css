@@ -192,6 +192,40 @@ audio {
     margin-top: 10px;
 }
 
+/* ★追加されたスタイル★ */
+.feedback-score {
+    font-size: 1.5rem; /* 大きめのフォントサイズ */
+    font-weight: bold; /* 太字 */
+    color: #b30000; /* 目立つ色 */
+    background-color: #ffe0e0; /* 背景色 */
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 2px solid #b30000;
+}
+
+.feedback-category {
+    font-size: 1.2rem; /* カテゴリタイトルを少し大きく */
+    font-weight: bold; /* 太字 */
+    color: #0056b3; /* メインカラーに合わせる */
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #e0e0e0; /* 下線 */
+}
+
+.feedback-example {
+    font-style: italic; /* 斜体 */
+    color: #555; /* 少し薄い色 */
+    padding-left: 15px; /* インデント */
+    border-left: 3px solid #ccc; /* 左側に線 */
+    margin-top: 10px;
+    background-color: #f0f0f0; /* 背景色 */
+    padding: 8px 15px;
+    border-radius: 4px;
+}
+
 /* レスポンシブデザインの調整 */
 @media (max-width: 768px) {
     .container {
