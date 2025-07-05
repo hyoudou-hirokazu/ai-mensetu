@@ -39,7 +39,6 @@ text_to_speech_client = texttospeech.TextToSpeechClient()
 speech_to_text_client = speech.SpeechClient()
 
 # 音声合成と音声認識のための設定
-# VOICE_NAME は動的に設定されるため、デフォルトは空に
 AUDIO_ENCODING = texttospeech.AudioEncoding.MP3
 SAMPLE_RATE_HERTZ = 48000
 
@@ -57,13 +56,12 @@ def start_interview():
     try:
         data = request.json
         interview_type = data.get('interview_type', 'general')
-        applicant_name = data.get('applicant_name', '〇〇') # 名前を取得
-        voice_gender = data.get('voice_gender', 'FEMALE') # 音声タイプを取得
+        applicant_name = data.get('applicant_name', '〇〇')
+        voice_gender = data.get('voice_gender', 'FEMALE')
 
-        applicant_name_global = applicant_name # グローバル変数に保存
-        voice_gender_global = voice_gender # グローバル変数に保存
+        applicant_name_global = applicant_name
+        voice_gender_global = voice_gender
 
-        # 新しい面接開始時にチャット履歴をリセット
         chat.history.clear()
 
         initial_prompt = ""
@@ -102,12 +100,10 @@ def start_interview():
         else:
             return jsonify({"error": "Invalid interview type"}), 400
 
-        # Geminiモデルに初期プロンプトを送信し、応答を生成させる
         response = chat.send_message(initial_prompt)
         ai_text = response.text
 
-        # Text-to-SpeechでAIの応答を音声に変換
-        tts_response = synthesize_speech(ai_text, voice_gender_global) # 音声タイプを渡す
+        tts_response = synthesize_speech(ai_text, voice_gender_global)
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
         return jsonify({
@@ -126,10 +122,10 @@ def process_audio():
     try:
         data = request.json
         audio_data_base64 = data.get('audio_data')
-        end_interview_prompt = data.get('end_interview_prompt') # 面接終了を促すプロンプト
+        end_interview_prompt = data.get('end_interview_prompt')
 
         recognized_text = ""
-        if audio_data_base64: # 音声データがある場合のみ音声認識
+        if audio_data_base64:
             audio_content = base64.b64decode(audio_data_base64)
             audio = speech.RecognitionAudio(content=audio_content)
             config = speech.RecognitionConfig(
@@ -142,7 +138,6 @@ def process_audio():
             if stt_response.results:
                 recognized_text = stt_response.results[0].alternatives[0].transcript
 
-        # 音声認識ができなかった場合、または面接終了プロンプトが送られた場合
         if not recognized_text and not end_interview_prompt:
             ai_text = 'すみません、あなたの音声を認識できませんでした。もう一度お願いします。'
             tts_response = synthesize_speech(ai_text, voice_gender_global)
@@ -155,20 +150,17 @@ def process_audio():
                 'feedback': '音声が認識されませんでした。'
             })
         
-        # 面接終了を促すプロンプトが送られた場合
         if end_interview_prompt:
             response = chat.send_message(end_interview_prompt)
             ai_text = response.text
         else:
-            # Geminiモデルにユーザーの応答を送信し、次の質問を生成させる
             chat_response_prompt = f"応募者の回答: {recognized_text}\n\n面接官として、この回答に基づいて次の質問を簡潔に、かつ箇条書きや特殊文字（例: *）を使用せずにしてください。"
             response = chat.send_message(chat_response_prompt)
             ai_text = response.text
 
-        tts_response = synthesize_speech(ai_text, voice_gender_global) # 音声タイプを渡す
+        tts_response = synthesize_speech(ai_text, voice_gender_global)
         audio_content_base64 = base64.b64encode(tts_response.audio_content).decode('utf-8')
 
-        # 面接中のフィードバックは返さない
         return jsonify({
             'status': 'success',
             'recognized_text': recognized_text,
@@ -180,6 +172,36 @@ def process_audio():
     except Exception as e:
         print(f"Error in process_audio: {e}")
         return jsonify({'status': 'error', 'error': str(e), 'message': '音声の処理中にエラーが発生しました。', 'recognized_text': '', 'feedback': 'フィードバックの取得中にエラーが発生しました。'})
+
+# ★中間フィードバック取得エンドポイントを追加★
+@app.route('/get_interim_feedback', methods=['POST'])
+def get_interim_feedback():
+    global applicant_name_global
+    try:
+        data = request.json
+        conversation_history_text = data.get('conversation_history', '')
+
+        # 最新の会話ターンに焦点を当ててフィードバックを生成するプロンプト
+        interim_feedback_prompt = (
+            f"面接練習アプリの面接官として、以下の面接履歴における{applicant_name_global}様の最新の回答について、改善点と良かった点を簡潔に、箇条書きや特殊文字（例: *）を使用せずにフィードバックしてください。\n"
+            "特に、回答の内容、話し方、論理構成に焦点を当ててください。面接官の視点から、具体的なアドバイスを提供してください。\n\n"
+            "面接履歴:\n"
+            f"{conversation_history_text}\n\n"
+            "フィードバック:"
+        )
+        
+        interim_feedback_model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-06-17')
+        interim_feedback_response = interim_feedback_model.generate_content(interim_feedback_prompt)
+        interim_feedback_text = interim_feedback_response.text
+
+        return jsonify({
+            'status': 'success',
+            'feedback': interim_feedback_text
+        })
+    except Exception as e:
+        print(f"Error in get_interim_feedback: {e}")
+        return jsonify({'status': 'error', 'error': str(e), 'message': '中間フィードバックの生成中にエラーが発生しました。'})
+
 
 # 総括フィードバック取得エンドポイント
 @app.route('/get_final_feedback', methods=['POST'])
@@ -196,7 +218,6 @@ def get_final_feedback():
             "フィードバック:"
         )
         
-        # 新しいチャットセッションでフィードバックを生成（会話履歴とは独立）
         feedback_model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-06-17')
         feedback_response = feedback_model.generate_content(feedback_prompt)
         final_feedback_text = feedback_response.text
@@ -216,10 +237,10 @@ def synthesize_speech(text, gender):
     
     # 性別に基づいて音声を選択
     if gender == "MALE":
-        voice_name = "ja-JP-Wavenet-D" # 男性声の例をDに変更
+        voice_name = "ja-JP-Wavenet-D"
         ssml_gender = texttospeech.SsmlVoiceGender.MALE
     else: # デフォルトは女性
-        voice_name = "ja-JP-Wavenet-A" # 女性声の例
+        voice_name = "ja-JP-Wavenet-A"
         ssml_gender = texttospeech.SsmlVoiceGender.FEMALE
 
     voice = texttospeech.VoiceSelectionParams(
