@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackContentElem = document.getElementById('feedback-content');
     const historyLogElem = document.getElementById('history-log');
     const interviewerImageElem = document.getElementById('interviewer-image');
+    const recordingIndicator = document.getElementById('recording-indicator');
 
     // UI初期状態設定
     function resetUI() {
@@ -119,12 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
             aiMessageElem.textContent = 'AI: （あなたの回答を待っています）'; // AIのメッセージを更新
             aiAudioElem.style.display = 'none'; // AIの音声を非表示に
             feedbackContentElem.innerHTML = 'フィードバックを生成中...'; // フィードバックエリアを更新
+            showRecordingIndicator();
         } catch (error) {
             console.error('マイクアクセスエラー:', error);
             statusMessageElem.textContent = 'マイクへのアクセスが拒否されました。';
             recordBtn.disabled = false;
             stopRecordBtn.disabled = true;
             feedbackButton.disabled = false; // エラー時はフィードバックボタンを有効に戻す
+            hideRecordingIndicator();
         }
     });
 
@@ -133,10 +136,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mediaRecorder && isRecording) {
             mediaRecorder.stop();
             isRecording = false;
-            recordBtn.disabled = true;
+            recordBtn.disabled = true; // 音声処理中は録音ボタンを無効化
             stopRecordBtn.disabled = true;
             feedbackButton.disabled = true; // 音声処理中はフィードバックボタンを無効化
             statusMessageElem.textContent = '音声を処理中...';
+            hideRecordingIndicator();
         }
     });
 
@@ -349,4 +353,13 @@ document.addEventListener('DOMContentLoaded', () => {
             interviewerImageElem.alt = '男性面接官';
         }
     });
+
+    // 録音状態の視覚化制御
+    function showRecordingIndicator() {
+        recordingIndicator.classList.add('active');
+    }
+
+    function hideRecordingIndicator() {
+        recordingIndicator.classList.remove('active');
+    }
 });
