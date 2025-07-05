@@ -13,11 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessageElem = document.getElementById('status-message');
     const feedbackContentElem = document.getElementById('feedback-content');
     const historyLogElem = document.getElementById('history-log');
-    const interviewerImage = document.getElementById('interviewer-image'); // ★追加★
+    const interviewerImage = document.getElementById('interviewer-image');
 
-    // 画像ファイルのパスを定義
-    const maleInterviewerImage = '{{ url_for("static", filename="images/male_interviewer.jpg") }}'; // ★追加★
-    const femaleInterviewerImage = '{{ url_for("static", filename="images/female_interviewer.jpg") }}'; // ★追加★
+    // ★変更: 画像ファイルのパスを隠し要素から取得する★
+    const maleInterviewerImage = document.getElementById('maleInterviewerImagePath').value;
+    const femaleInterviewerImage = document.getElementById('femaleInterviewerImagePath').value;
 
     let mediaRecorder;
     let audioChunks = [];
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(interviewTimer); // タイマーをクリア
         
         // 初期画像を設定 (女性)
-        interviewerImage.src = femaleInterviewerImage; // ★追加★
+        interviewerImage.src = femaleInterviewerImage;
     }
 
     resetUI();
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startInterviewBtn.disabled = true;
 
         // 面接官の画像を切り替える
-        if (voiceGender === 'MALE') { // ★追加★
+        if (voiceGender === 'MALE') {
             interviewerImage.src = maleInterviewerImage;
         } else {
             interviewerImage.src = femaleInterviewerImage;
