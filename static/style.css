@@ -194,13 +194,16 @@ h1, h2 {
 }
 
 .feedback-score {
-    font-size: 1.5rem;
+    font-size: 1.6rem; /* 少し大きく */
     font-weight: bold;
-    color: #28a745; /* 緑色で目立つように */
+    color: #0056b3; /* 青系に変更して、カテゴリと差別化 */
+    background-color: #e0f2f7; /* 薄い水色の背景 */
+    border: 2px solid #007bff; /* 青い枠線 */
+    border-radius: 8px; /* 角を丸く */
+    padding: 15px 20px; /* パディングを増やす */
     text-align: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #28a745;
+    margin-bottom: 20px; /* 下のマージンを増やす */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* 軽い影 */
 }
 
 
