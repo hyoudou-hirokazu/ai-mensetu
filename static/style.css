@@ -166,7 +166,48 @@ h1, h2 {
     }
 }
 
-/* 面接官画像最適化 */
+/* === ヘッダー・ナビゲーションの整理 === */
+.header {
+    width: 100%;
+    background: var(--card-bg);
+    box-shadow: 0 2px 12px rgba(79, 140, 255, 0.07);
+    padding: 0 0 0 0;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.header .logo {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    letter-spacing: 0.04em;
+    margin-left: 32px;
+}
+.header .nav {
+    display: flex;
+    gap: 24px;
+    margin-right: 32px;
+}
+.header .nav a {
+    color: var(--text-sub);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.05rem;
+    transition: color 0.2s;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+}
+.header .nav a:hover {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+}
+
+/* === 面接官画像・アイコンの最適化 === */
 .interviewer-image-area {
     display: flex;
     justify-content: center;
@@ -176,22 +217,160 @@ h1, h2 {
     background: linear-gradient(135deg, #f8f9fa, #e9ecef);
     border-radius: 16px;
     border: 2px solid #dee2e6;
+    box-shadow: 0 4px 24px rgba(162, 89, 255, 0.08);
+    position: relative;
 }
-
 .interviewer-image {
-    width: 280px;
-    height: 280px;
+    width: 220px;
+    height: 220px;
     object-fit: cover;
     border-radius: 50%;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 32px rgba(79, 140, 255, 0.18);
     border: 4px solid #fff;
     background: #fff;
-    transition: all 0.3s ease;
+    transition: transform 0.3s, box-shadow 0.3s;
+    z-index: 1;
+}
+.interviewer-image-area::after {
+    content: '\1F464'; /* Unicode: 👤 */
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    font-size: 2.2rem;
+    color: var(--accent);
+    opacity: 0.18;
+    z-index: 0;
+}
+.interviewer-image:hover {
+    transform: scale(1.07) rotate(-2deg);
+    box-shadow: 0 16px 48px rgba(162, 89, 255, 0.18);
 }
 
-.interviewer-image:hover {
-    transform: scale(1.05);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+/* === フィードバック表示の視覚的強化 === */
+.feedback-area #feedback-log {
+    border: 2px solid var(--primary);
+    background: linear-gradient(135deg, #f5faff 60%, #e3eafe 100%);
+    box-shadow: 0 2px 12px rgba(79, 140, 255, 0.07);
+    border-radius: 16px;
+    padding: 32px 24px;
+    min-height: 120px;
+    margin-top: 12px;
+}
+.feedback-score {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: var(--primary-dark);
+    background: linear-gradient(90deg, #e3eafe 0%, #f5f7fa 100%);
+    border: 2.5px solid var(--primary);
+    border-radius: 14px;
+    padding: 18px 36px;
+    width: fit-content;
+    margin: 0 auto 28px auto;
+    display: block;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.10);
+    position: relative;
+    animation: fadeIn 0.7s;
+}
+.feedback-category {
+    font-size: 1.15em;
+    font-weight: bold;
+    margin-top: 24px;
+    margin-bottom: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    background: var(--primary-dark);
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.08);
+    animation: fadeInUp 0.7s;
+}
+.feedback-category.improve {
+    background: #e74c3c;
+}
+.feedback-category.summary {
+    background: #27ae60;
+}
+.feedback-example {
+    background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%);
+    border-left: 4px solid #ff9800;
+    padding: 14px 18px;
+    margin-top: 10px;
+    border-radius: 8px;
+    color: #e65100;
+    font-size: 1em;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.08);
+    position: relative;
+    animation: fadeIn 0.7s;
+}
+.feedback-category::before {
+    content: '💬';
+    margin-right: 8px;
+    font-size: 1.2em;
+}
+.feedback-category.improve::before {
+    content: '⚠';
+}
+.feedback-category.summary::before {
+    content: '📊';
+}
+.feedback-example::before {
+    content: '💡';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff9800;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8em;
+}
+
+/* === アニメーション・マイクロインタラクション === */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(40px); }
+    to { opacity: 1; transform: none; }
+}
+button, .settings select, .settings input[type="text"] {
+    transition: box-shadow 0.2s, border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
+}
+button:active {
+    transform: scale(0.97);
+}
+
+/* === レスポンシブデザイン強化 === */
+@media (max-width: 900px) {
+    .header .logo { margin-left: 12px; }
+    .header .nav { margin-right: 12px; gap: 12px; }
+    .settings, .interview-area, .feedback-area, .conversation-history, .status {
+        max-width: 98vw;
+        padding: 18px 8px;
+    }
+    .interviewer-image { width: 160px; height: 160px; }
+}
+@media (max-width: 600px) {
+    .header { flex-direction: column; min-height: 48px; }
+    .header .logo, .header .nav { margin: 0; }
+    .header .nav { gap: 8px; }
+    .settings, .interview-area, .feedback-area, .conversation-history, .status {
+        padding: 10px 2px;
+        margin-bottom: 12px;
+    }
+    .interviewer-image { width: 110px; height: 110px; }
+    .feedback-score { font-size: 1.2em; padding: 10px 12px; }
+    .feedback-category { font-size: 1em; padding: 6px 8px; }
+    .feedback-example { padding: 8px 8px; font-size: 0.95em; }
 }
 
 /* 録音状態視覚化 */
@@ -249,37 +428,12 @@ h1, h2 {
     font-size: 1.5rem;
 }
 
-.feedback-area #feedback-log {
-    border: 2px solid #e1e8ed;
-    padding: 24px;
-    min-height: 120px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
 .feedback-area #feedback-log p {
     margin-bottom: 12px;
     line-height: 1.6;
 }
 
 /* フィードバックスコア改善 */
-.feedback-score {
-    font-size: 2.8em;
-    font-weight: bold;
-    color: #3498db;
-    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-    border: 3px solid #2196f3;
-    border-radius: 16px;
-    padding: 24px 40px;
-    width: fit-content;
-    margin: 0 auto 32px auto;
-    display: block;
-    text-align: center;
-    box-shadow: 0 4px 16px rgba(33, 150, 243, 0.15);
-    position: relative;
-}
-
 .feedback-score::before {
     content: "評価点数";
     position: absolute;
@@ -295,42 +449,13 @@ h1, h2 {
 }
 
 /* フィードバックカテゴリー改善 */
-.feedback-category {
-    font-size: 1.3em;
-    font-weight: bold;
-    margin-top: 28px;
-    margin-bottom: 12px;
-    padding: 12px 18px;
-    border-radius: 8px;
-    color: white;
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.feedback-category::before {
-    content: "✓";
-    margin-right: 8px;
-    font-size: 1.2em;
-}
-
 .feedback-category:not(.improve):not(.summary) {
     background: linear-gradient(135deg, #3498db, #2980b9);
     border-left: 6px solid #1f5f8b;
 }
 
-.feedback-category.improve {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    border-left: 6px solid #a93226;
-}
-
 .feedback-category.improve::before {
     content: "⚠";
-}
-
-.feedback-category.summary {
-    background: linear-gradient(135deg, #27ae60, #229954);
-    border-left: 6px solid #1e8449;
 }
 
 .feedback-category.summary::before {
