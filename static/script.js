@@ -1,5 +1,3 @@
-// static/script.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const interviewTypeSelect = document.getElementById('interview-type');
     const voiceGenderSelect = document.getElementById('voice-gender');
@@ -13,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessageElem = document.getElementById('status-message');
     const feedbackContentElem = document.getElementById('feedback-content');
     const historyLogElem = document.getElementById('history-log');
+    const interviewerImageElem = document.getElementById('interviewer-image');
 
     // UI初期状態設定
     function resetUI() {
@@ -321,7 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // HTMLに整形
         for (const category in categories) {
             if (categories[category].length > 0) {
-                formattedHtml += `<div class="feedback-category">${category}</div>`;
+                let catClass = '';
+                if (category === '改善点') catClass = 'improve';
+                if (category === '総合評価') catClass = 'summary';
+                formattedHtml += `<div class="feedback-category${catClass ? ' ' + catClass : ''}">${category}</div>`;
                 categories[category].forEach(item => {
                     // 返答例のフォーマット
                     if (category === "改善点" && item.includes("返答例:")) {
@@ -336,4 +338,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return formattedHtml;
     }
+
+    // 面接官画像切り替え
+    voiceGenderSelect.addEventListener('change', () => {
+        if (voiceGenderSelect.value === 'FEMALE') {
+            interviewerImageElem.src = '/static/interviewer_female.jpg';
+            interviewerImageElem.alt = '女性面接官';
+        } else {
+            interviewerImageElem.src = '/static/interviewer_male.jpg';
+            interviewerImageElem.alt = '男性面接官';
+        }
+    });
 });
