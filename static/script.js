@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
     const statusMessageElem = document.getElementById('status-message');
-    const feedbackContentElem = document.getElementById('feedback-content'); // ★修正: document.get -> document.getElementById★
+    const feedbackContentElem = document.getElementById('feedback-content'); // ★修正済み: document.getElementByIdを使用★
     const historyLogElem = document.getElementById('history-log');
     const interviewerImage = document.getElementById('interviewer-image');
 
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // ★変更: DOMContentLoadedで最初に画像パスをフェッチし、完了を待つ★
+    // DOMContentLoadedで最初に画像パスをフェッチし、完了を待つ
     await fetchImagePaths();
 
     // UI初期状態設定
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             recordBtn.disabled = false;
             feedbackButton.disabled = false;
         }
-    }
+    });
 
     // 会話履歴に追加するヘルパー関数
     function addHistory(role, text) {
