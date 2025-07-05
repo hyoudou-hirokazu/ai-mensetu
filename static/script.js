@@ -1,8 +1,7 @@
 // static/script.js
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => { // asyncキーワードを削除
     const interviewTypeSelect = document.getElementById('interview-type');
-    // const applicantNameInput = document.getElementById('applicant-name'); // 削除
     const voiceGenderSelect = document.getElementById('voice-gender');
     const startInterviewBtn = document.getElementById('start-interview-btn');
     const recordBtn = document.getElementById('record-btn');
@@ -14,17 +13,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusMessageElem = document.getElementById('status-message');
     const feedbackContentElem = document.getElementById('feedback-content');
     const historyLogElem = document.getElementById('history-log');
-    // const interviewerImage = document.getElementById('interviewer-image'); // 画像要素は削除されたためコメントアウトまたは削除
-
-    // 画像パスに関する変数を削除
-    // let maleInterviewerImage = '';
-    // let femaleInterviewerImage = '';
-
-    // 画像パスをサーバーからフェッチする関数を削除
-    // async function fetchImagePaths() { ... }
-
-    // 画像パスのフェッチ呼び出しを削除
-    // await fetchImagePaths();
 
     // UI初期状態設定
     function resetUI() {
@@ -40,11 +28,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。';
         historyLogElem.innerHTML = ''; // 履歴をクリア
         clearTimeout(interviewTimer); // タイマーをクリア
-        
-        // 初期画像設定のロジックを削除
-        // if (femaleInterviewerImage) {
-        //     interviewerImage.src = femaleInterviewerImage;
-        // }
     }
 
     resetUI(); // UIをリセット
@@ -59,27 +42,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
+        console.log('「面接を開始」ボタンがクリックされました。'); // ★デバッグログ★
         resetUI(); // 新しい面接開始時にUIをリセット
         const interviewType = interviewTypeSelect.value;
-        // const applicantName = applicantNameInput.value.trim(); // 名前を取得 - 削除
-        const voiceGender = voiceGenderSelect.value; // 音声タイプを取得
+        const voiceGender = voiceGenderSelect.value;
         
-        // if (!applicantName) { // 名前入力チェックを削除
-        //     statusMessageElem.textContent = '面接者の名前を入力してください。';
-        //     return;
-        // }
-
         statusMessageElem.textContent = '面接を開始中...';
         startInterviewBtn.disabled = true; // 面接開始中は無効化
 
-        // 面接官の画像を切り替えるロジックを削除
-        // if (voiceGender === 'MALE' && maleInterviewerImage) {
-        //     interviewerImage.src = maleInterviewerImage;
-        // } else if (voiceGender === 'FEMALE' && femaleInterviewerImage) {
-        //     interviewerImage.src = femaleInterviewerImage;
-        // }
-
         try {
+            console.log('サーバーへ /start_interview リクエストを送信中...'); // ★デバッグログ★
             const response = await fetch('/start_interview', {
                 method: 'POST',
                 headers: {
@@ -87,12 +59,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 body: JSON.stringify({ 
                     interview_type: interviewType,
-                    // applicant_name: applicantName, // 名前を送信 - 削除
-                    voice_gender: voiceGender // 音声タイプを送信
+                    voice_gender: voiceGender
                 })
             });
 
             const data = await response.json();
+            console.log('サーバーからの応答:', data); // ★デバッグログ★
 
             if (data.status === 'success') {
                 aiMessageElem.textContent = data.message;
@@ -119,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 startInterviewBtn.disabled = false;
             }
         } catch (error) {
-            console.error('面接開始エラー:', error);
+            console.error('面接開始エラー（fetchまたはJSONパース失敗）:', error); // ★デバッグログ★
             aiMessageElem.textContent = 'サーバーとの通信に失敗しました。';
             statusMessageElem.textContent = 'エラーが発生しました。';
             startInterviewBtn.disabled = false;
