@@ -1,90 +1,59 @@
 // static/script.js
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const interviewTypeSelect = document.getElementById('interview-type');
-    const voiceGenderSelect = document.getElementById('voice-gender');
+    const applicantNameInput = document.getElementById('applicant-name'); // 追加
+    const voiceGenderSelect = document.getElementById('voice-gender'); // 追加
     const startInterviewBtn = document.getElementById('start-interview-btn');
     const recordBtn = document.getElementById('record-btn');
     const stopRecordBtn = document.getElementById('stop-record-btn');
-    const feedbackButton = document.getElementById('feedback-button');
     const aiMessageElem = document.getElementById('ai-message');
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
     const statusMessageElem = document.getElementById('status-message');
-    const feedbackContentElem = document.getElementById('feedback-content'); // ★修正済み: document.getElementByIdを使用★
+    const feedbackLogElem = document.getElementById('feedback-log');
+    const finalFeedbackElem = document.getElementById('final-feedback'); // 変更
     const historyLogElem = document.getElementById('history-log');
-    const interviewerImage = document.getElementById('interviewer-image');
 
-    let maleInterviewerImage = ''; // 初期化
-    let femaleInterviewerImage = ''; // 初期化
-
-    // 画像パスをサーバーからフェッチする関数
-    async function fetchImagePaths() {
-        try {
-            const response = await fetch('/get_image_paths');
-            const data = await response.json();
-            if (data.status === 'success') {
-                maleInterviewerImage = data.male_image_path;
-                femaleInterviewerImage = data.female_image_path;
-                console.log('画像パスをフェッチしました:', maleInterviewerImage, femaleInterviewerImage);
-            } else {
-                console.error('画像パスのフェッチに失敗しました:', data.error);
-            }
-        } catch (error) {
-            console.error('画像パスのフェッチ中にエラーが発生しました:', error);
-        }
-    }
-
-    // DOMContentLoadedで最初に画像パスをフェッチし、完了を待つ
-    await fetchImagePaths();
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let interviewTimer; // 面接時間管理用
+    let interviewStartTime; // 面接開始時刻
+    const INTERVIEW_DURATION_MIN = 15 * 60 * 1000; // 15分 (ミリ秒)
+    const INTERVIEW_DURATION_MAX = 30 * 60 * 1000; // 30分 (ミリ秒)
 
     // UI初期状態設定
     function resetUI() {
         startInterviewBtn.disabled = false;
         recordBtn.disabled = true;
         stopRecordBtn.disabled = true;
-        feedbackButton.disabled = true;
         aiMessageElem.textContent = '面接を開始します。準備ができたら「面接を開始」ボタンを押してください。';
         aiAudioElem.style.display = 'none';
         aiAudioElem.src = '';
         userTranscriptElem.textContent = '';
         statusMessageElem.textContent = '準備完了';
-        feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。';
+        finalFeedbackElem.textContent = '面接終了後に総括フィードバックが表示されます。'; // 変更
         historyLogElem.innerHTML = ''; // 履歴をクリア
         clearTimeout(interviewTimer); // タイマーをクリア
-        
-        // 初期画像を設定 (女性)
-        // fetchImagePathsが完了していることを前提とする
-        if (femaleInterviewerImage) {
-            interviewerImage.src = femaleInterviewerImage;
-        }
     }
 
-    resetUI(); // 画像パスがフェッチされた後にUIをリセット
-
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
-    let interviewTimer;
-    let interviewStartTime;
-    const INTERVIEW_DURATION_MIN = 15 * 60 * 1000; // 15分 (ミリ秒)
-    const INTERVIEW_DURATION_MAX = 30 * 60 * 1000; // 30分 (ミリ秒)
+    resetUI(); // ページ読み込み時にUIを初期化
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
-        resetUI(); // ここでもUIをリセット
+        resetUI(); // 新しい面接開始時にUIをリセット
         const interviewType = interviewTypeSelect.value;
-        const voiceGender = voiceGenderSelect.value;
+        const applicantName = applicantNameInput.value.trim(); // 名前を取得
+        const voiceGender = voiceGenderSelect.value; // 音声タイプを取得
         
-        statusMessageElem.textContent = '面接を開始中...';
-        startInterviewBtn.disabled = true;
-
-        // 面接官の画像を切り替える
-        if (voiceGender === 'MALE' && maleInterviewerImage) {
-            interviewerImage.src = maleInterviewerImage;
-        } else if (voiceGender === 'FEMALE' && femaleInterviewerImage) {
-            interviewerImage.src = femaleInterviewerImage;
+        if (!applicantName) {
+            statusMessageElem.textContent = '面接者の名前を入力してください。';
+            return;
         }
+
+        statusMessageElem.textContent = '面接を開始中...';
+        startInterviewBtn.disabled = true; // 面接開始中は無効化
 
         try {
             const response = await fetch('/start_interview', {
@@ -94,7 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 body: JSON.stringify({ 
                     interview_type: interviewType,
-                    voice_gender: voiceGender
+                    applicant_name: applicantName, // 名前を送信
+                    voice_gender: voiceGender // 音声タイプを送信
                 })
             });
 
@@ -109,12 +79,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 addHistory('AI', data.message);
 
+                // 面接開始時刻を記録し、タイマーを設定
                 interviewStartTime = Date.now();
                 setInterviewTimer();
 
                 aiAudioElem.onended = () => {
                     recordBtn.disabled = false;
-                    feedbackButton.disabled = false;
                     statusMessageElem.textContent = '録音可能です。';
                 };
 
@@ -156,18 +126,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             isRecording = true;
             recordBtn.disabled = true;
             stopRecordBtn.disabled = false;
-            feedbackButton.disabled = true;
             statusMessageElem.textContent = '録音中...';
             userTranscriptElem.textContent = '（録音中...）';
             aiMessageElem.textContent = 'AI: （あなたの回答を待っています）';
             aiAudioElem.style.display = 'none';
-            feedbackContentElem.innerHTML = 'フィードバックを生成中...';
+            finalFeedbackElem.textContent = '面接中はフィードバックを生成しません。'; // 面接中はフィードバックを非表示
         } catch (error) {
             console.error('マイクアクセスエラー:', error);
             statusMessageElem.textContent = 'マイクへのアクセスが拒否されました。';
             recordBtn.disabled = false;
             stopRecordBtn.disabled = true;
-            feedbackButton.disabled = false;
         }
     });
 
@@ -178,34 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             isRecording = false;
             recordBtn.disabled = true;
             stopRecordBtn.disabled = true;
-            feedbackButton.disabled = true;
             statusMessageElem.textContent = '音声を処理中...';
-        }
-    });
-
-    // フィードバックボタンのクリックイベント
-    feedbackButton.addEventListener('click', async () => {
-        feedbackButton.disabled = true;
-        feedbackContentElem.innerHTML = 'フィードバックを生成中...少々お待ちください。';
-        try {
-            const response = await fetch('/get_feedback', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ conversation_history: getConversationHistoryText() })
-            });
-            const data = await response.json();
-            if (data.status === 'success') {
-                feedbackContentElem.innerHTML = formatFeedback(data.feedback, data.score);
-            } else {
-                feedbackContentElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
-            }
-        } catch (error) {
-            console.error('フィードバック取得エラー:', error);
-            feedbackContentElem.textContent = 'フィードバックの取得中にサーバーとの通信エラーが発生しました。';
-        } finally {
-            feedbackButton.disabled = false;
         }
     });
 
@@ -217,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ audio_data: base64data, voice_gender: voiceGenderSelect.value })
+                body: JSON.stringify({ audio_data: base64data })
             });
 
             const data = await response.json();
@@ -233,12 +174,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 addHistory('あなた', data.recognized_text);
                 addHistory('AI', data.message);
 
+                // 面接終了の合図があれば、総括フィードバックを要求
                 if (data.message.includes("面接は終了です")) {
                     endInterview(data.message);
                 } else {
                     aiAudioElem.onended = () => {
                         recordBtn.disabled = false;
-                        feedbackButton.disabled = false;
                         statusMessageElem.textContent = '録音可能です。';
                     };
                 }
@@ -248,15 +189,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 aiMessageElem.textContent = 'AI応答エラー: ' + (data.message || '不明なエラー');
                 statusMessageElem.textContent = 'エラーが発生しました。';
                 recordBtn.disabled = false;
-                feedbackButton.disabled = false;
             }
         } catch (error) {
             console.error('音声処理エラー:', error);
             statusMessageElem.textContent = '音声処理中にエラーが発生しました。';
             recordBtn.disabled = false;
-            feedbackButton.disabled = false;
         }
-    });
+    }
 
     // 会話履歴に追加するヘルパー関数
     function addHistory(role, text) {
@@ -269,24 +208,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 面接時間管理タイマー設定
     function setInterviewTimer() {
-        const elapsedTime = Date.now() - interviewStartTime;
-        const remainingTime = INTERVIEW_DURATION_MAX - elapsedTime;
-
+        const remainingTime = INTERVIEW_DURATION_MAX - (Date.now() - interviewStartTime);
         if (remainingTime <= 0) {
             endInterview("面接時間が上限に達しました。");
             return;
         }
 
         // 面接終了の目安時間（15分）が経過したら、AIに終了を促すプロンプトを送信
-        if (elapsedTime >= INTERVIEW_DURATION_MIN && !isInterviewEnding) {
-            isInterviewEnding = true;
+        if (Date.now() - interviewStartTime >= INTERVIEW_DURATION_MIN && !isInterviewEnding) {
+            isInterviewEnding = true; // 終了処理中フラグ
             sendEndOfInterviewPrompt();
         }
 
-        interviewTimer = setTimeout(setInterviewTimer, 1000);
+        interviewTimer = setTimeout(setInterviewTimer, 1000); // 1秒ごとにチェック
     }
 
-    let isInterviewEnding = false;
+    let isInterviewEnding = false; // 面接終了処理中フラグ
 
     // 面接終了を促すプロンプトをAIに送信
     async function sendEndOfInterviewPrompt() {
@@ -296,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ audio_data: null, end_interview_prompt: "面接官として、面接時間が経過したことを応募者に伝え、面接を終了してください。応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。", voice_gender: voiceGenderSelect.value })
+                body: JSON.stringify({ audio_data: null, end_interview_prompt: "面接官として、面接時間が経過したことを応募者に伝え、面接を終了してください。" })
             });
             const data = await response.json();
             if (data.status === 'success') {
@@ -306,7 +243,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 aiAudioElem.play();
                 addHistory('AI', data.message);
                 aiAudioElem.onended = () => {
-                    endInterview(data.message);
+                    endInterview(data.message); // AIの終了メッセージ再生後に総括フィードバックへ
                 };
             } else {
                 console.error("面接終了プロンプト送信エラー:", data.error);
@@ -318,33 +255,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+
     // 面接終了処理と総括フィードバックの取得
     async function endInterview(finalMessage) {
-        clearTimeout(interviewTimer);
+        clearTimeout(interviewTimer); // タイマー停止
         recordBtn.disabled = true;
         stopRecordBtn.disabled = true;
-        feedbackButton.disabled = true;
-        startInterviewBtn.disabled = false;
+        startInterviewBtn.disabled = false; // 面接を再開できるように
         statusMessageElem.textContent = '面接が終了しました。フィードバックを生成中...';
-        aiMessageElem.textContent = finalMessage;
+        aiMessageElem.textContent = finalMessage; // 最後のAIメッセージを表示
 
         try {
-            const response = await fetch('/get_feedback', {
+            const response = await fetch('/get_final_feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ conversation_history: getConversationHistoryText() })
+                body: JSON.stringify({ conversation_history: getConversationHistoryText() }) // 全会話履歴を送信
             });
             const data = await response.json();
             if (data.status === 'success') {
-                feedbackContentElem.innerHTML = formatFeedback(data.feedback, data.score);
+                finalFeedbackElem.textContent = data.feedback;
             } else {
-                feedbackContentElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
+                finalFeedbackElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
             }
         } catch (error) {
             console.error('最終フィードバック取得エラー:', error);
-            feedbackContentElem.textContent = '最終フィードバックの取得中にサーバーとの通信エラーが発生しました。';
+            finalFeedbackElem.textContent = '最終フィードバックの取得中にサーバーとの通信エラーが発生しました。';
         }
     }
 
@@ -358,73 +295,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             historyText += `${role} ${text}\n`;
         });
         return historyText;
-    }
-
-    // フィードバックをカテゴリ分けして表示する関数を修正（スコア表示対応）
-    function formatFeedback(feedbackText, score) {
-        let formattedHtml = '';
-        const categories = {
-            "良かった点": [],
-            "改善点": [],
-            "総合評価": []
-        };
-
-        // フィードバックテキストからスコア部分を削除して処理
-        let cleanFeedbackText = feedbackText;
-        const scoreMatch = feedbackText.match(/評価点数:\s*\d+\/100/);
-        if (scoreMatch) {
-            cleanFeedbackText = feedbackText.replace(scoreMatch[0], '').trim();
-        }
-
-        // フィードバックテキストをカテゴリに分割
-        const lines = cleanFeedbackText.split('\n');
-        let currentCategory = null;
-        lines.forEach(line => {
-            line = line.trim();
-            if (line.startsWith('良かった点:')) {
-                currentCategory = "良かった点";
-                categories[currentCategory].push(line.replace('良かった点:', '').trim());
-            } else if (line.startsWith('改善点:')) {
-                currentCategory = "改善点";
-                categories[currentCategory].push(line.replace('改善点:', '').trim());
-            } else if (line.startsWith('総合評価:')) {
-                currentCategory = "総合評価";
-                categories[currentCategory].push(line.replace('総合評価:', '').trim());
-            } else if (line.startsWith('返答例:')) { // 返答例は改善点に含める
-                if (categories["改善点"].length > 0) {
-                    categories["改善点"][categories["改善点"].length - 1] += "\n" + line; // 直前の改善点に追加
-                } else {
-                    // もし返答例が単独で来た場合（通常はありえないが念のため）
-                    categories["改善点"].push(line);
-                }
-            }
-            else if (currentCategory && line) {
-                categories[currentCategory].push(line);
-            }
-        });
-
-        // スコアがあれば最初に表示
-        if (score !== null && score !== undefined) {
-            formattedHtml += `<div class="feedback-score">評価点数: ${score}/100</div>`;
-        }
-
-        // HTMLに整形
-        for (const category in categories) {
-            if (categories[category].length > 0) {
-                formattedHtml += `<div class="feedback-category">${category}</div>`;
-                categories[category].forEach(item => {
-                    // 返答例のフォーマット
-                    if (category === "改善点" && item.includes("返答例:")) {
-                        const parts = item.split('返答例:');
-                        formattedHtml += `<p>${parts[0].trim()}</p>`;
-                        formattedHtml += `<p class="feedback-example">返答例: ${parts[1].trim()}</p>`;
-                    } else {
-                        formattedHtml += `<p>${item}</p>`;
-                    }
-                });
-            }
-        }
-        return formattedHtml;
     }
 
     historyLogElem.innerHTML = '';
