@@ -1,106 +1,169 @@
 /* static/style.css */
 
+/* === 配色・カラーパレット統一 === */
+:root {
+    --primary: #4f8cff;
+    --primary-dark: #3a6fd8;
+    --secondary: #a259ff;
+    --background: #f5f7fa;
+    --card-bg: #fff;
+    --card-shadow: 0 4px 24px rgba(79, 140, 255, 0.08);
+    --border: #e3e8f0;
+    --text-main: #222b45;
+    --text-sub: #6b7a99;
+    --accent: #a259ff;
+    --button-gradient: linear-gradient(90deg, #4f8cff 0%, #a259ff 100%);
+    --button-hover: linear-gradient(90deg, #3a6fd8 0%, #7c3aed 100%);
+}
+
 body {
     font-family: 'Segoe UI', 'BIZ UDGothic', 'Meiryo UI', sans-serif;
     line-height: 1.6;
-    color: #2c3e50;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--text-main);
+    background: linear-gradient(135deg, #e3eafe 0%, #f5f7fa 100%);
     margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    padding: 0;
     min-height: 100vh;
 }
 
 .container {
-    background: #fff;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    max-width: 900px;
-    width: 100%;
-    margin-top: 20px;
+    background: var(--background);
+    padding: 40px 0;
+    min-height: 100vh;
+}
+
+/* === カード型レイアウト・余白最適化 === */
+.settings, .interview-area, .feedback-area, .conversation-history, .status {
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    border: 1.5px solid var(--border);
+    margin: 0 auto 32px auto;
+    padding: 32px 28px;
+    max-width: 600px;
+    width: 95%;
+    transition: box-shadow 0.2s;
+}
+.settings:hover, .interview-area:hover, .feedback-area:hover, .conversation-history:hover {
+    box-shadow: 0 8px 32px rgba(79, 140, 255, 0.15);
 }
 
 h1, h2 {
-    color: #2c3e50;
+    color: var(--primary-dark);
     text-align: center;
-    margin-bottom: 25px;
-    font-weight: 600;
+    margin-bottom: 28px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
-/* カード型レイアウト */
-.settings, .interview-area, .feedback-area, .conversation-history, .status {
-    margin-bottom: 24px;
-    padding: 24px;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e8f0fe;
-    transition: all 0.3s ease;
-}
-
-.settings:hover, .interview-area:hover, .feedback-area:hover, .conversation-history:hover {
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-}
-
-.settings label {
-    font-weight: 600;
-    margin-right: 10px;
-    display: block;
-    margin-bottom: 8px;
-    margin-top: 18px;
-    color: #2c3e50;
-}
-
-.settings label:first-child {
-    margin-top: 0;
-}
-
+/* === ボタン・入力欄のデザイン改善 === */
 .settings select, .settings input[type="text"] {
-    padding: 12px 16px;
+    padding: 14px 18px;
     border-radius: 8px;
-    border: 2px solid #e1e8ed;
-    font-size: 1rem;
-    width: calc(100% - 32px);
+    border: 1.5px solid var(--border);
+    font-size: 1.08rem;
+    width: 100%;
     box-sizing: border-box;
-    margin-bottom: 12px;
-    transition: border-color 0.3s ease;
+    margin-bottom: 16px;
+    background: #f8faff;
+    color: var(--text-main);
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .settings select:focus, .settings input[type="text"]:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px #c7d7ff;
 }
 
-.settings button {
-    padding: 14px 20px;
+.settings button, .user-input-area button, #feedback-button {
+    padding: 14px 0;
     border-radius: 8px;
     border: none;
-    font-size: 1.1rem;
+    font-size: 1.12rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
+    background: var(--button-gradient);
+    color: #fff;
     width: 100%;
-    margin-top: 24px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.10);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    letter-spacing: 0.01em;
 }
-
-.settings button:hover {
-    background: linear-gradient(135deg, #2980b9, #1f5f8b);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+.settings button:hover, .user-input-area button:hover, #feedback-button:hover {
+    background: var(--button-hover);
+    box-shadow: 0 4px 16px rgba(162, 89, 255, 0.13);
+    transform: translateY(-2px) scale(1.02);
 }
-
-.settings button:disabled {
-    background: #bdc3c7;
+.settings button:disabled, .user-input-area button:disabled, #feedback-button:disabled {
+    background: #dbeafe;
+    color: #b0b8c9;
     cursor: not-allowed;
-    transform: none;
     box-shadow: none;
+    transform: none;
+}
+
+/* === その他の余白・テキスト調整 === */
+.settings label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-main);
+    display: block;
+}
+
+.interview-area .label, .user-input-area .label {
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 10px;
+    font-size: 1.08rem;
+}
+
+.response-box {
+    border: 1.5px solid var(--border);
+    background: #f8faff;
+    min-height: 56px;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    font-size: 1.05rem;
+    color: var(--text-main);
+}
+
+/* === レスポンシブ強化 === */
+@media (max-width: 768px) {
+    .container {
+        padding: 18px 0;
+    }
+    .settings, .interview-area, .feedback-area, .conversation-history, .status {
+        padding: 18px 8px;
+        max-width: 98vw;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    h2 {
+        font-size: 1.2rem;
+    }
+}
+@media (max-width: 480px) {
+    .settings, .interview-area, .feedback-area, .conversation-history, .status {
+        padding: 10px 2px;
+        margin-bottom: 12px;
+    }
+    .response-box {
+        padding: 10px;
+        font-size: 0.98rem;
+    }
+    .settings select, .settings input[type="text"] {
+        font-size: 0.98rem;
+        padding: 10px 8px;
+    }
+    .settings button, .user-input-area button, #feedback-button {
+        font-size: 1rem;
+        padding: 10px 0;
+    }
 }
 
 /* 面接官画像最適化 */
@@ -178,101 +241,6 @@ h1, h2 {
 @keyframes wave {
     0%, 100% { height: 20px; }
     50% { height: 40px; }
-}
-
-.interview-area .label {
-    font-weight: 600;
-    color: #2c3e50;
-    margin-bottom: 12px;
-    font-size: 1.1rem;
-}
-
-.response-box {
-    border: 2px solid #e1e8ed;
-    background-color: #ffffff;
-    min-height: 60px;
-    padding: 18px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    transition: border-color 0.3s ease;
-}
-
-.response-box:focus-within {
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.user-input-area button {
-    padding: 12px 24px;
-    margin-right: 12px;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-}
-
-#record-btn {
-    background: linear-gradient(135deg, #27ae60, #229954);
-    color: white;
-}
-
-#record-btn:hover {
-    background: linear-gradient(135deg, #229954, #1e8449);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-}
-
-#record-btn:disabled {
-    background: #bdc3c7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-#stop-record-btn {
-    background: linear-gradient(135deg, #e74c3c, #c0392b);
-    color: white;
-}
-
-#stop-record-btn:hover {
-    background: linear-gradient(135deg, #c0392b, #a93226);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-}
-
-#stop-record-btn:disabled {
-    background: #bdc3c7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-#feedback-button {
-    background: linear-gradient(135deg, #f39c12, #e67e22);
-    color: white;
-}
-
-#feedback-button:hover {
-    background: linear-gradient(135deg, #e67e22, #d35400);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
-}
-
-#feedback-button:disabled {
-    background: #bdc3c7;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-/* フィードバック表示改善 */
-.feedback-area {
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border: 2px solid #dee2e6;
 }
 
 .feedback-area h2 {
@@ -443,149 +411,4 @@ audio {
     width: 100%;
     margin-top: 12px;
     border-radius: 8px;
-}
-
-/* レスポンシブデザイン強化 */
-@media (max-width: 1024px) {
-    .container {
-        max-width: 95%;
-        padding: 25px;
-    }
-    
-    .interviewer-image {
-        width: 240px;
-        height: 240px;
-    }
-    
-    .feedback-score {
-        font-size: 2.4em;
-        padding: 20px 32px;
-    }
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    
-    .container {
-        padding: 20px;
-        margin: 10px 0;
-        border-radius: 12px;
-    }
-    
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        padding: 18px;
-        margin-bottom: 18px;
-    }
-    
-    .settings select, .settings input[type="text"], .settings button, .user-input-area button {
-        font-size: 16px;
-        padding: 14px 16px;
-    }
-    
-    .user-input-area button {
-        width: 100%;
-        margin-right: 0;
-        margin-bottom: 8px;
-    }
-    
-    .interviewer-image {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .interviewer-image-area {
-        padding: 16px;
-        margin: 18px 0;
-    }
-    
-    .feedback-score {
-        font-size: 2em;
-        padding: 16px 24px;
-        margin-bottom: 24px;
-    }
-    
-    .feedback-category {
-        font-size: 1.1em;
-        padding: 10px 14px;
-    }
-    
-    .feedback-example {
-        padding: 12px 16px;
-        font-size: 0.95em;
-    }
-    
-    h1 {
-        font-size: 1.8rem;
-    }
-    
-    h2 {
-        font-size: 1.4rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 16px;
-        margin: 5px 0;
-    }
-    
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        padding: 16px;
-        margin-bottom: 16px;
-    }
-    
-    .interviewer-image {
-        width: 160px;
-        height: 160px;
-    }
-    
-    .feedback-score {
-        font-size: 1.8em;
-        padding: 12px 20px;
-    }
-    
-    .feedback-category {
-        font-size: 1em;
-        padding: 8px 12px;
-    }
-    
-    .recording-indicator {
-        padding: 10px;
-        font-size: 0.9em;
-    }
-    
-    .recording-wave span {
-        width: 3px;
-        margin: 0 1px;
-    }
-    
-    h1 {
-        font-size: 1.6rem;
-    }
-    
-    h2 {
-        font-size: 1.2rem;
-    }
-}
-
-@media (max-width: 360px) {
-    .container {
-        padding: 12px;
-    }
-    
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        padding: 12px;
-    }
-    
-    .interviewer-image {
-        width: 140px;
-        height: 140px;
-    }
-    
-    .feedback-score {
-        font-size: 1.6em;
-        padding: 10px 16px;
-    }
 }
