@@ -2,7 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const interviewTypeSelect = document.getElementById('interview-type');
-    // const applicantNameInput = document.getElementById('applicant-name'); // ★削除★
     const voiceGenderSelect = document.getElementById('voice-gender');
     const startInterviewBtn = document.getElementById('start-interview-btn');
     const recordBtn = document.getElementById('record-btn');
@@ -12,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
     const statusMessageElem = document.getElementById('status-message');
-    const feedbackContentElem = document.getElementById('feedback-content'); // ★変更: IDをfeedback-contentに統一★
+    const feedbackContentElem = document.getElementById('feedback-content');
     const historyLogElem = document.getElementById('history-log');
 
     let mediaRecorder;
@@ -34,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
         aiAudioElem.src = '';
         userTranscriptElem.textContent = '';
         statusMessageElem.textContent = '準備完了';
-        feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。'; // ★変更★
+        feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。';
         historyLogElem.innerHTML = ''; // 履歴をクリア
         clearTimeout(interviewTimer); // タイマーをクリア
     }
@@ -45,14 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     startInterviewBtn.addEventListener('click', async () => {
         resetUI();
         const interviewType = interviewTypeSelect.value;
-        // const applicantName = applicantNameInput.value.trim(); // ★削除★
         const voiceGender = voiceGenderSelect.value;
         
-        // if (!applicantName) { // ★削除★
-        //     statusMessageElem.textContent = '面接者の名前を入力してください。';
-        //     return;
-        // }
-
         statusMessageElem.textContent = '面接を開始中...';
         startInterviewBtn.disabled = true;
 
@@ -64,7 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ 
                     interview_type: interviewType,
-                    // applicant_name: applicantName, // ★削除★
                     voice_gender: voiceGender
                 })
             });
@@ -132,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userTranscriptElem.textContent = '（録音中...）';
             aiMessageElem.textContent = 'AI: （あなたの回答を待っています）';
             aiAudioElem.style.display = 'none';
-            feedbackContentElem.innerHTML = 'フィードバックを生成中...'; // ★変更: フィードバックを生成中に表示★
+            feedbackContentElem.innerHTML = 'フィードバックを生成中...';
         } catch (error) {
             console.error('マイクアクセスエラー:', error);
             statusMessageElem.textContent = 'マイクへのアクセスが拒否されました。';
@@ -154,21 +146,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ★フィードバックボタンのクリックイベント★
+    // フィードバックボタンのクリックイベント
     feedbackButton.addEventListener('click', async () => {
         feedbackButton.disabled = true;
-        feedbackContentElem.innerHTML = 'フィードバックを生成中...少々お待ちください。'; // ★変更★
+        feedbackContentElem.innerHTML = 'フィードバックを生成中...少々お待ちください。';
         try {
-            const response = await fetch('/get_feedback', { // ★エンドポイント名を変更★
+            const response = await fetch('/get_feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ conversation_history: getConversationHistoryText() }) // 全会話履歴を送信
+                body: JSON.stringify({ conversation_history: getConversationHistoryText() })
             });
             const data = await response.json();
             if (data.status === 'success') {
-                feedbackContentElem.innerHTML = formatFeedback(data.feedback); // ★変更: フォーマット関数を呼び出す★
+                feedbackContentElem.innerHTML = formatFeedback(data.feedback, data.score);
             } else {
                 feedbackContentElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
             }
@@ -188,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ audio_data: base64data })
+                body: JSON.stringify({ audio_data: base64data, voice_gender: voiceGenderSelect.value })
             });
 
             const data = await response.json();
@@ -267,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ audio_data: null, end_interview_prompt: "面接官として、面接時間が経過したことを応募者に伝え、面接を終了してください。応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。" })
+                body: JSON.stringify({ audio_data: null, end_interview_prompt: "面接官として、面接時間が経過したことを応募者に伝え、面接を終了してください。応募者が感謝の言葉を述べたら、「どういたしまして。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。応募者が「面接を終わりにしたい」と伝えたら、「かしこまりました。本日の面接は終了です。面接にご参加いただきありがとうございました。結果については後日連絡いたします。」と伝えて面接を終了してください。", voice_gender: voiceGenderSelect.value })
             });
             const data = await response.json();
             if (data.status === 'success') {
@@ -296,20 +288,20 @@ document.addEventListener('DOMContentLoaded', () => {
         stopRecordBtn.disabled = true;
         feedbackButton.disabled = true;
         startInterviewBtn.disabled = false;
-        statusMessageElem.textContent = '面接が終了しました。フィードバックを生成中...'; // ★変更: メッセージを統一★
+        statusMessageElem.textContent = '面接が終了しました。フィードバックを生成中...';
         aiMessageElem.textContent = finalMessage;
 
         try {
-            const response = await fetch('/get_feedback', { // ★エンドポイント名を変更★
+            const response = await fetch('/get_feedback', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ conversation_history: getConversationHistoryText(), final_feedback: true }) // 最終フィードバックであることを伝える
+                body: JSON.stringify({ conversation_history: getConversationHistoryText() })
             });
             const data = await response.json();
             if (data.status === 'success') {
-                feedbackContentElem.innerHTML = formatFeedback(data.feedback); // ★変更: フォーマット関数を呼び出す★
+                feedbackContentElem.innerHTML = formatFeedback(data.feedback, data.score);
             } else {
                 feedbackContentElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
             }
@@ -331,8 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return historyText;
     }
 
-    // ★フィードバックをカテゴリ分けして表示する関数を追加★
-    function formatFeedback(feedbackText) {
+    // フィードバックをカテゴリ分けして表示する関数を修正（スコア表示対応）
+    function formatFeedback(feedbackText, score) {
         let formattedHtml = '';
         const categories = {
             "良かった点": [],
@@ -340,8 +332,20 @@ document.addEventListener('DOMContentLoaded', () => {
             "総合評価": []
         };
 
+        // スコアがあれば最初に表示
+        if (score !== null && score !== undefined) {
+            formattedHtml += `<div class="feedback-score">評価点数: ${score}/100</div>`;
+        }
+
+        // フィードバックテキストからスコア部分を削除して処理
+        let cleanFeedbackText = feedbackText;
+        const scoreMatch = feedbackText.match(/評価点数:\s*\d+\/100/);
+        if (scoreMatch) {
+            cleanFeedbackText = feedbackText.replace(scoreMatch[0], '').trim();
+        }
+
         // フィードバックテキストをカテゴリに分割
-        const lines = feedbackText.split('\n');
+        const lines = cleanFeedbackText.split('\n');
         let currentCategory = null;
         lines.forEach(line => {
             line = line.trim();
