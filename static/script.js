@@ -332,11 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
             "総合評価": []
         };
 
-        // スコアがあれば最初に表示
-        if (score !== null && score !== undefined) {
-            formattedHtml += `<div class="feedback-score">評価点数: ${score}/100</div>`;
-        }
-
         // フィードバックテキストからスコア部分を削除して処理
         let cleanFeedbackText = feedbackText;
         const scoreMatch = feedbackText.match(/評価点数:\s*\d+\/100/);
@@ -362,6 +357,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 categories[currentCategory].push(line);
             }
         });
+
+        // スコアがあれば最初に表示
+        if (score !== null && score !== undefined) {
+            formattedHtml += `<div class="feedback-score">評価点数: ${score}/100</div>`;
+        }
 
         // HTMLに整形
         for (const category in categories) {
