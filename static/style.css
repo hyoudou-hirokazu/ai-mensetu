@@ -49,7 +49,7 @@ h1, h2 {
     margin-top: 0;
 }
 
-.settings select { /* input[type="text"] は削除されたため、ここから削除 */
+.settings select {
     padding: 10px 15px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -162,7 +162,7 @@ h1, h2 {
 }
 
 
-.feedback-box-style { /* 統一されたフィードバックボックスのスタイル */
+.feedback-box-style {
     border: 1px dashed #d0d0d0;
     padding: 15px;
     min-height: 80px;
@@ -191,6 +191,16 @@ h1, h2 {
     margin-left: 10px;
     padding-left: 10px;
     border-left: 2px solid #ccc;
+}
+
+.feedback-score {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745; /* 緑色で目立つように */
+    text-align: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #28a745;
 }
 
 
