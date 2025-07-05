@@ -13,6 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessageElem = document.getElementById('status-message');
     const feedbackContentElem = document.getElementById('feedback-content');
     const historyLogElem = document.getElementById('history-log');
+    const interviewerImage = document.getElementById('interviewer-image'); // ★追加★
+
+    // 画像ファイルのパスを定義
+    const maleInterviewerImage = '{{ url_for("static", filename="images/male_interviewer.jpg") }}'; // ★追加★
+    const femaleInterviewerImage = '{{ url_for("static", filename="images/female_interviewer.jpg") }}'; // ★追加★
 
     let mediaRecorder;
     let audioChunks = [];
@@ -36,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
         feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。';
         historyLogElem.innerHTML = ''; // 履歴をクリア
         clearTimeout(interviewTimer); // タイマーをクリア
+        
+        // 初期画像を設定 (女性)
+        interviewerImage.src = femaleInterviewerImage; // ★追加★
     }
 
     resetUI();
@@ -48,6 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         statusMessageElem.textContent = '面接を開始中...';
         startInterviewBtn.disabled = true;
+
+        // 面接官の画像を切り替える
+        if (voiceGender === 'MALE') { // ★追加★
+            interviewerImage.src = maleInterviewerImage;
+        } else {
+            interviewerImage.src = femaleInterviewerImage;
+        }
 
         try {
             const response = await fetch('/start_interview', {
@@ -332,11 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
             "総合評価": []
         };
 
-        // スコアがあれば最初に表示
-        if (score !== null && score !== undefined) {
-            formattedHtml += `<div class="feedback-score">評価点数: ${score}/100</div>`;
-        }
-
         // フィードバックテキストからスコア部分を削除して処理
         let cleanFeedbackText = feedbackText;
         const scoreMatch = feedbackText.match(/評価点数:\s*\d+\/100/);
@@ -358,10 +368,23 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (line.startsWith('総合評価:')) {
                 currentCategory = "総合評価";
                 categories[currentCategory].push(line.replace('総合評価:', '').trim());
-            } else if (currentCategory && line) {
+            } else if (line.startsWith('返答例:')) { // 返答例は改善点に含める
+                if (categories["改善点"].length > 0) {
+                    categories["改善点"][categories["改善点"].length - 1] += "\n" + line; // 直前の改善点に追加
+                } else {
+                    // もし返答例が単独で来た場合（通常はありえないが念のため）
+                    categories["改善点"].push(line);
+                }
+            }
+            else if (currentCategory && line) {
                 categories[currentCategory].push(line);
             }
         });
+
+        // スコアがあれば最初に表示
+        if (score !== null && score !== undefined) {
+            formattedHtml += `<div class="feedback-score">評価点数: ${score}/100</div>`;
+        }
 
         // HTMLに整形
         for (const category in categories) {
