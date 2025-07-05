@@ -16,17 +16,28 @@
                 <option value="general">一般企業向け</option>
                 <option value="disability">障害者雇用向け（合理的配慮あり）</option>
             </select>
+
+            <label for="applicant-name">面接者の名前:</label>
+            <input type="text" id="applicant-name" placeholder="例: 山田 太郎">
+
+            <label for="voice-gender">面接官の声:</label>
+            <select id="voice-gender">
+                <option value="FEMALE">女性</option>
+                <option value="MALE">男性</option>
+            </select>
+
             <button id="start-interview-btn">面接を開始</button>
         </div>
 
         <div class="status">
             <p id="status-message">準備完了</p>
         </div>
+
         <div class="interview-area">
             <div class="ai-response-area">
                 <p class="label">AI:</p>
                 <div id="ai-response" class="response-box">
-                    <p id="ai-message">面接を開始します。準備ができたら「録音開始」ボタンを押してください。</p>
+                    <p id="ai-message">面接を開始します。準備ができたら「面接を開始」ボタンを押してください。</p>
                     <audio id="ai-audio" controls style="display: none;"></audio>
                 </div>
             </div>
@@ -42,16 +53,17 @@
         </div>
 
         <div class="feedback-area">
-            <h2>フィードバック</h2>
+            <h2>総括フィードバック</h2>
             <div id="feedback-log">
-                <p id="current-feedback">面接中はフィードバックが表示されます。</p>
+                <p id="final-feedback">面接終了後に総括フィードバックが表示されます。</p>
             </div>
         </div>
 
         <div class="conversation-history">
             <h2>会話履歴</h2>
             <div id="history-log">
-                </div>
+                <!-- 会話のログがここに追加されます -->
+            </div>
         </div>
     </div>
 
