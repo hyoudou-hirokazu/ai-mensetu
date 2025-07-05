@@ -2,18 +2,17 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     const interviewTypeSelect = document.getElementById('interview-type');
-    const applicantNameInput = document.getElementById('applicant-name');
+    // const applicantNameInput = document.getElementById('applicant-name'); // ★削除★
     const voiceGenderSelect = document.getElementById('voice-gender');
     const startInterviewBtn = document.getElementById('start-interview-btn');
     const recordBtn = document.getElementById('record-btn');
     const stopRecordBtn = document.getElementById('stop-record-btn');
-    const feedbackButton = document.getElementById('feedback-button'); // ★追加★
+    const feedbackButton = document.getElementById('feedback-button');
     const aiMessageElem = document.getElementById('ai-message');
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
     const statusMessageElem = document.getElementById('status-message');
-    const interimFeedbackElem = document.getElementById('interim-feedback'); // ★追加★
-    const finalFeedbackElem = document.getElementById('final-feedback');
+    const feedbackContentElem = document.getElementById('feedback-content'); // ★変更: IDをfeedback-contentに統一★
     const historyLogElem = document.getElementById('history-log');
 
     let mediaRecorder;
@@ -29,16 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
         startInterviewBtn.disabled = false;
         recordBtn.disabled = true;
         stopRecordBtn.disabled = true;
-        feedbackButton.disabled = true; // ★追加★
+        feedbackButton.disabled = true;
         aiMessageElem.textContent = '面接を開始します。準備ができたら「面接を開始」ボタンを押してください。';
         aiAudioElem.style.display = 'none';
         aiAudioElem.src = '';
         userTranscriptElem.textContent = '';
         statusMessageElem.textContent = '準備完了';
-        interimFeedbackElem.textContent = '面接中にフィードバックボタンを押すと、ここに表示されます。'; // ★変更★
-        finalFeedbackElem.textContent = '面接終了後に総括フィードバックが表示されます。';
-        historyLogElem.innerHTML = '';
-        clearTimeout(interviewTimer);
+        feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。'; // ★変更★
+        historyLogElem.innerHTML = ''; // 履歴をクリア
+        clearTimeout(interviewTimer); // タイマーをクリア
     }
 
     resetUI();
@@ -47,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
     startInterviewBtn.addEventListener('click', async () => {
         resetUI();
         const interviewType = interviewTypeSelect.value;
-        const applicantName = applicantNameInput.value.trim();
+        // const applicantName = applicantNameInput.value.trim(); // ★削除★
         const voiceGender = voiceGenderSelect.value;
         
-        if (!applicantName) {
-            statusMessageElem.textContent = '面接者の名前を入力してください。';
-            return;
-        }
+        // if (!applicantName) { // ★削除★
+        //     statusMessageElem.textContent = '面接者の名前を入力してください。';
+        //     return;
+        // }
 
         statusMessageElem.textContent = '面接を開始中...';
         startInterviewBtn.disabled = true;
@@ -66,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({ 
                     interview_type: interviewType,
-                    applicant_name: applicantName,
+                    // applicant_name: applicantName, // ★削除★
                     voice_gender: voiceGender
                 })
             });
@@ -87,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 aiAudioElem.onended = () => {
                     recordBtn.disabled = false;
-                    feedbackButton.disabled = false; // ★追加: 録音可能になったらフィードバックボタンも有効に★
+                    feedbackButton.disabled = false;
                     statusMessageElem.textContent = '録音可能です。';
                 };
 
@@ -129,18 +127,18 @@ document.addEventListener('DOMContentLoaded', () => {
             isRecording = true;
             recordBtn.disabled = true;
             stopRecordBtn.disabled = false;
-            feedbackButton.disabled = true; // ★追加: 録音中はフィードバックボタンを無効に★
+            feedbackButton.disabled = true;
             statusMessageElem.textContent = '録音中...';
             userTranscriptElem.textContent = '（録音中...）';
             aiMessageElem.textContent = 'AI: （あなたの回答を待っています）';
             aiAudioElem.style.display = 'none';
-            interimFeedbackElem.textContent = '面接中はフィードバックを生成しません。'; // ★変更: 中間フィードバックをクリア★
+            feedbackContentElem.innerHTML = 'フィードバックを生成中...'; // ★変更: フィードバックを生成中に表示★
         } catch (error) {
             console.error('マイクアクセスエラー:', error);
             statusMessageElem.textContent = 'マイクへのアクセスが拒否されました。';
             recordBtn.disabled = false;
             stopRecordBtn.disabled = true;
-            feedbackButton.disabled = false; // ★追加: エラー時はフィードバックボタンを有効に★
+            feedbackButton.disabled = false;
         }
     });
 
@@ -151,34 +149,34 @@ document.addEventListener('DOMContentLoaded', () => {
             isRecording = false;
             recordBtn.disabled = true;
             stopRecordBtn.disabled = true;
-            feedbackButton.disabled = true; // ★追加: 送信中はフィードバックボタンを無効に★
+            feedbackButton.disabled = true;
             statusMessageElem.textContent = '音声を処理中...';
         }
     });
 
     // ★フィードバックボタンのクリックイベント★
     feedbackButton.addEventListener('click', async () => {
-        feedbackButton.disabled = true; // クリック中は無効に
-        interimFeedbackElem.textContent = 'フィードバックを生成中...少々お待ちください。';
+        feedbackButton.disabled = true;
+        feedbackContentElem.innerHTML = 'フィードバックを生成中...少々お待ちください。'; // ★変更★
         try {
-            const response = await fetch('/get_interim_feedback', {
+            const response = await fetch('/get_feedback', { // ★エンドポイント名を変更★
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ conversation_history: getConversationHistoryText() })
+                body: JSON.stringify({ conversation_history: getConversationHistoryText() }) // 全会話履歴を送信
             });
             const data = await response.json();
             if (data.status === 'success') {
-                interimFeedbackElem.textContent = data.feedback;
+                feedbackContentElem.innerHTML = formatFeedback(data.feedback); // ★変更: フォーマット関数を呼び出す★
             } else {
-                interimFeedbackElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
+                feedbackContentElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
             }
         } catch (error) {
-            console.error('中間フィードバック取得エラー:', error);
-            interimFeedbackElem.textContent = '中間フィードバックの取得中にサーバーとの通信エラーが発生しました。';
+            console.error('フィードバック取得エラー:', error);
+            feedbackContentElem.textContent = 'フィードバックの取得中にサーバーとの通信エラーが発生しました。';
         } finally {
-            feedbackButton.disabled = false; // 処理完了後、再度有効に
+            feedbackButton.disabled = false;
         }
     });
 
@@ -211,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     aiAudioElem.onended = () => {
                         recordBtn.disabled = false;
-                        feedbackButton.disabled = false; // ★追加★
+                        feedbackButton.disabled = false;
                         statusMessageElem.textContent = '録音可能です。';
                     };
                 }
@@ -221,13 +219,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 aiMessageElem.textContent = 'AI応答エラー: ' + (data.message || '不明なエラー');
                 statusMessageElem.textContent = 'エラーが発生しました。';
                 recordBtn.disabled = false;
-                feedbackButton.disabled = false; // ★追加★
+                feedbackButton.disabled = false;
             }
         } catch (error) {
             console.error('音声処理エラー:', error);
             statusMessageElem.textContent = '音声処理中にエラーが発生しました。';
             recordBtn.disabled = false;
-            feedbackButton.disabled = false; // ★追加★
+            feedbackButton.disabled = false;
         }
     }
 
@@ -296,28 +294,28 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(interviewTimer);
         recordBtn.disabled = true;
         stopRecordBtn.disabled = true;
-        feedbackButton.disabled = true; // ★追加: 面接終了時はフィードバックボタンを無効に★
+        feedbackButton.disabled = true;
         startInterviewBtn.disabled = false;
-        statusMessageElem.textContent = '面接が終了しました。総括フィードバックを生成中...';
+        statusMessageElem.textContent = '面接が終了しました。フィードバックを生成中...'; // ★変更: メッセージを統一★
         aiMessageElem.textContent = finalMessage;
 
         try {
-            const response = await fetch('/get_final_feedback', {
+            const response = await fetch('/get_feedback', { // ★エンドポイント名を変更★
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ conversation_history: getConversationHistoryText() })
+                body: JSON.stringify({ conversation_history: getConversationHistoryText(), final_feedback: true }) // 最終フィードバックであることを伝える
             });
             const data = await response.json();
             if (data.status === 'success') {
-                finalFeedbackElem.textContent = data.feedback;
+                feedbackContentElem.innerHTML = formatFeedback(data.feedback); // ★変更: フォーマット関数を呼び出す★
             } else {
-                finalFeedbackElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
+                feedbackContentElem.textContent = 'フィードバックの取得中にエラーが発生しました: ' + (data.error || '不明なエラー');
             }
         } catch (error) {
             console.error('最終フィードバック取得エラー:', error);
-            finalFeedbackElem.textContent = '最終フィードバックの取得中にサーバーとの通信エラーが発生しました。';
+            feedbackContentElem.textContent = '最終フィードバックの取得中にサーバーとの通信エラーが発生しました。';
         }
     }
 
@@ -331,6 +329,53 @@ document.addEventListener('DOMContentLoaded', () => {
             historyText += `${role} ${text}\n`;
         });
         return historyText;
+    }
+
+    // ★フィードバックをカテゴリ分けして表示する関数を追加★
+    function formatFeedback(feedbackText) {
+        let formattedHtml = '';
+        const categories = {
+            "良かった点": [],
+            "改善点": [],
+            "総合評価": []
+        };
+
+        // フィードバックテキストをカテゴリに分割
+        const lines = feedbackText.split('\n');
+        let currentCategory = null;
+        lines.forEach(line => {
+            line = line.trim();
+            if (line.startsWith('良かった点:')) {
+                currentCategory = "良かった点";
+                categories[currentCategory].push(line.replace('良かった点:', '').trim());
+            } else if (line.startsWith('改善点:')) {
+                currentCategory = "改善点";
+                categories[currentCategory].push(line.replace('改善点:', '').trim());
+            } else if (line.startsWith('総合評価:')) {
+                currentCategory = "総合評価";
+                categories[currentCategory].push(line.replace('総合評価:', '').trim());
+            } else if (currentCategory && line) {
+                categories[currentCategory].push(line);
+            }
+        });
+
+        // HTMLに整形
+        for (const category in categories) {
+            if (categories[category].length > 0) {
+                formattedHtml += `<div class="feedback-category">${category}</div>`;
+                categories[category].forEach(item => {
+                    // 返答例のフォーマット
+                    if (category === "改善点" && item.includes("返答例:")) {
+                        const parts = item.split('返答例:');
+                        formattedHtml += `<p>${parts[0].trim()}</p>`;
+                        formattedHtml += `<p class="feedback-example">返答例: ${parts[1].trim()}</p>`;
+                    } else {
+                        formattedHtml += `<p>${item}</p>`;
+                    }
+                });
+            }
+        }
+        return formattedHtml;
     }
 
     historyLogElem.innerHTML = '';
