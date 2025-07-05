@@ -40,22 +40,22 @@ h1, h2 {
 .settings label {
     font-weight: bold;
     margin-right: 10px;
-    display: block; /* ラベルをブロック要素にして改行 */
+    display: block;
     margin-bottom: 5px;
-    margin-top: 15px; /* 各設定項目間のスペース */
+    margin-top: 15px;
 }
 
 .settings label:first-child {
-    margin-top: 0; /* 最初のラベルは上マージンなし */
+    margin-top: 0;
 }
 
-.settings select, .settings input[type="text"] {
+.settings select { /* input[type="text"] は削除されたため、ここから削除 */
     padding: 10px 15px;
     border-radius: 5px;
     border: 1px solid #ccc;
     font-size: 1rem;
-    width: calc(100% - 30px); /* パディング分を考慮 */
-    box-sizing: border-box; /* パディングを幅に含める */
+    width: calc(100% - 30px);
+    box-sizing: border-box;
     margin-bottom: 10px;
 }
 
@@ -68,7 +68,7 @@ h1, h2 {
     transition: background-color 0.3s ease, border-color 0.3s ease;
     background-color: #007bff;
     color: white;
-    width: 100%; /* ボタンを幅いっぱいに */
+    width: 100%;
     margin-top: 20px;
 }
 
@@ -143,26 +143,26 @@ h1, h2 {
     cursor: not-allowed;
 }
 
-#feedback-button { /* ★追加★ */
+#feedback-button {
     background-color: #007bff;
     color: white;
     border: 1px solid #007bff;
-    margin-top: 10px; /* ボタン間のスペース */
+    margin-top: 10px;
 }
 
-#feedback-button:hover { /* ★追加★ */
+#feedback-button:hover {
     background-color: #0056b3;
     border-color: #0056b3;
 }
 
-#feedback-button:disabled { /* ★追加★ */
+#feedback-button:disabled {
     background-color: #cccccc;
     border-color: #cccccc;
     cursor: not-allowed;
 }
 
 
-.feedback-box-style { /* ★変更: feedback-area #feedback-log から分離し、再利用可能なクラスに★ */
+.feedback-box-style { /* 統一されたフィードバックボックスのスタイル */
     border: 1px dashed #d0d0d0;
     padding: 15px;
     min-height: 80px;
@@ -170,17 +170,29 @@ h1, h2 {
     border-radius: 5px;
 }
 
-.feedback-area #interim-feedback-log { /* ★追加★ */
-    margin-bottom: 20px; /* 各フィードバックセクション間のスペース */
+/* フィードバックカテゴリのスタイル */
+.feedback-category {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #0056b3;
+    border-bottom: 1px solid #cceeff;
+    padding-bottom: 3px;
 }
 
-.feedback-area #final-feedback-log { /* ★追加★ */
-    background-color: #e6ffe6; /* 最終フィードバックは別の背景色 */
+.feedback-category:first-child {
+    margin-top: 0;
 }
 
-.feedback-area p {
-    margin-bottom: 8px;
+.feedback-example {
+    font-style: italic;
+    color: #666;
+    margin-top: 5px;
+    margin-left: 10px;
+    padding-left: 10px;
+    border-left: 2px solid #ccc;
 }
+
 
 .conversation-history #history-log {
     max-height: 300px;
@@ -224,12 +236,12 @@ audio {
     .container {
         padding: 15px;
     }
-    .settings select, .settings input[type="text"], .settings button, .user-input-area button {
+    .settings select, .settings button, .user-input-area button {
         width: 100%;
         margin-left: 0;
         margin-top: 10px;
     }
-    .user-input-area button { /* ボタンが縦に並ぶように調整 */
+    .user-input-area button {
         margin-right: 0;
         margin-bottom: 10px;
     }
