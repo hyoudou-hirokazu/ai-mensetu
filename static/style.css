@@ -203,3 +203,44 @@ audio {
         margin-top: 10px;
     }
 }
+
+.feedback-score {
+    font-size: 2em;
+    font-weight: bold;
+    color: #ff9800;
+    background: #fff3cd;
+    border: 2px solid #ffe082;
+    border-radius: 8px;
+    padding: 12px 20px;
+    width: fit-content;
+    margin: 0 auto 24px auto;
+    display: block;
+    text-align: center;
+}
+
+.feedback-category {
+    font-size: 1.15em;
+    font-weight: bold;
+    color: #1976d2;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    border-left: 4px solid #1976d2;
+    padding-left: 10px;
+    background: #f0f4fa;
+    border-radius: 4px;
+}
+
+.feedback-example {
+    background: #f0f4c3;
+    border-left: 4px solid #cddc39;
+    padding: 8px 16px;
+    margin-top: 8px;
+    border-radius: 6px;
+    color: #666;
+    font-size: 0.98em;
+}
+
+#feedback-content p {
+    margin-bottom: 8px;
+    margin-top: 0;
+}
