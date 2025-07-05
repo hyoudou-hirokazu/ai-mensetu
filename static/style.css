@@ -29,7 +29,7 @@ h1, h2 {
     margin-bottom: 25px;
 }
 
-.settings, .interview-area, .feedback-area, .conversation-history, .status { /* .statusを追加 */
+.settings, .interview-area, .feedback-area, .conversation-history, .status {
     margin-bottom: 30px;
     padding: 20px;
     border: 1px solid #e0e0e0;
@@ -40,22 +40,36 @@ h1, h2 {
 .settings label {
     font-weight: bold;
     margin-right: 10px;
+    display: block; /* ラベルをブロック要素にして改行 */
+    margin-bottom: 5px;
+    margin-top: 15px; /* 各設定項目間のスペース */
 }
 
-.settings select, .settings button {
+.settings label:first-child {
+    margin-top: 0; /* 最初のラベルは上マージンなし */
+}
+
+.settings select, .settings input[type="text"] {
     padding: 10px 15px;
     border-radius: 5px;
     border: 1px solid #ccc;
     font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    width: calc(100% - 30px); /* パディング分を考慮 */
+    box-sizing: border-box; /* パディングを幅に含める */
+    margin-bottom: 10px;
 }
 
 .settings button {
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #007bff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
     background-color: #007bff;
     color: white;
-    border-color: #007bff;
-    margin-left: 10px;
+    width: 100%; /* ボタンを幅いっぱいに */
+    margin-top: 20px;
 }
 
 .settings button:hover {
@@ -82,8 +96,8 @@ h1, h2 {
     padding: 15px;
     border-radius: 5px;
     margin-bottom: 15px;
-    word-wrap: break-word; /* 長いテキストの折り返し */
-    white-space: pre-wrap; /* 改行を維持 */
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
 
 .user-input-area button {
@@ -133,7 +147,7 @@ h1, h2 {
     border: 1px dashed #d0d0d0;
     padding: 15px;
     min-height: 80px;
-    background-color: #fffacd; /* 薄い黄色 */
+    background-color: #fffacd;
     border-radius: 5px;
 }
 
@@ -142,8 +156,8 @@ h1, h2 {
 }
 
 .conversation-history #history-log {
-    max-height: 300px; /* 高さ制限 */
-    overflow-y: auto; /* スクロール可能に */
+    max-height: 300px;
+    overflow-y: auto;
     border: 1px solid #e0e0e0;
     padding: 15px;
     background-color: #f9f9f9;
@@ -183,7 +197,7 @@ audio {
     .container {
         padding: 15px;
     }
-    .settings button, .user-input-area button {
+    .settings select, .settings input[type="text"], .settings button, .user-input-area button {
         width: 100%;
         margin-left: 0;
         margin-top: 10px;
