@@ -1,6 +1,6 @@
 // static/script.js
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const interviewTypeSelect = document.getElementById('interview-type');
     const voiceGenderSelect = document.getElementById('voice-gender');
     const startInterviewBtn = document.getElementById('start-interview-btn');
@@ -11,21 +11,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiAudioElem = document.getElementById('ai-audio');
     const userTranscriptElem = document.getElementById('user-transcript');
     const statusMessageElem = document.getElementById('status-message');
-    const feedbackContentElem = document.getElementById('feedback-content');
+    const feedbackContentElem = document.getElementById('feedback-content'); // ★修正: document.get -> document.getElementById★
     const historyLogElem = document.getElementById('history-log');
     const interviewerImage = document.getElementById('interviewer-image');
 
-    // ★変更: 画像ファイルのパスを隠し要素から取得する★
-    const maleInterviewerImage = document.getElementById('maleInterviewerImagePath').value;
-    const femaleInterviewerImage = document.getElementById('femaleInterviewerImagePath').value;
+    let maleInterviewerImage = ''; // 初期化
+    let femaleInterviewerImage = ''; // 初期化
 
-    let mediaRecorder;
-    let audioChunks = [];
-    let isRecording = false;
-    let interviewTimer;
-    let interviewStartTime;
-    const INTERVIEW_DURATION_MIN = 15 * 60 * 1000; // 15分 (ミリ秒)
-    const INTERVIEW_DURATION_MAX = 30 * 60 * 1000; // 30分 (ミリ秒)
+    // 画像パスをサーバーからフェッチする関数
+    async function fetchImagePaths() {
+        try {
+            const response = await fetch('/get_image_paths');
+            const data = await response.json();
+            if (data.status === 'success') {
+                maleInterviewerImage = data.male_image_path;
+                femaleInterviewerImage = data.female_image_path;
+                console.log('画像パスをフェッチしました:', maleInterviewerImage, femaleInterviewerImage);
+            } else {
+                console.error('画像パスのフェッチに失敗しました:', data.error);
+            }
+        } catch (error) {
+            console.error('画像パスのフェッチ中にエラーが発生しました:', error);
+        }
+    }
+
+    // ★変更: DOMContentLoadedで最初に画像パスをフェッチし、完了を待つ★
+    await fetchImagePaths();
 
     // UI初期状態設定
     function resetUI() {
@@ -43,14 +54,25 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(interviewTimer); // タイマーをクリア
         
         // 初期画像を設定 (女性)
-        interviewerImage.src = femaleInterviewerImage;
+        // fetchImagePathsが完了していることを前提とする
+        if (femaleInterviewerImage) {
+            interviewerImage.src = femaleInterviewerImage;
+        }
     }
 
-    resetUI();
+    resetUI(); // 画像パスがフェッチされた後にUIをリセット
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+    let interviewTimer;
+    let interviewStartTime;
+    const INTERVIEW_DURATION_MIN = 15 * 60 * 1000; // 15分 (ミリ秒)
+    const INTERVIEW_DURATION_MAX = 30 * 60 * 1000; // 30分 (ミリ秒)
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
-        resetUI();
+        resetUI(); // ここでもUIをリセット
         const interviewType = interviewTypeSelect.value;
         const voiceGender = voiceGenderSelect.value;
         
@@ -58,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
         startInterviewBtn.disabled = true;
 
         // 面接官の画像を切り替える
-        if (voiceGender === 'MALE') {
+        if (voiceGender === 'MALE' && maleInterviewerImage) {
             interviewerImage.src = maleInterviewerImage;
-        } else {
+        } else if (voiceGender === 'FEMALE' && femaleInterviewerImage) {
             interviewerImage.src = femaleInterviewerImage;
         }
 
