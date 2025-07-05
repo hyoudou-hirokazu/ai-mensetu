@@ -27,7 +27,10 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMessageElem.textContent = '準備完了';
         feedbackContentElem.innerHTML = 'フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。';
         historyLogElem.innerHTML = ''; // 履歴をクリア
-        clearTimeout(interviewTimer); // タイマーをクリア
+        // interviewTimerがnullまたはundefinedでないことを確認してからクリア
+        if (interviewTimer) {
+            clearTimeout(interviewTimer); // タイマーをクリア
+        }
     }
 
     resetUI(); // UIをリセット
