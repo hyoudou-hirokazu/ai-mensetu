@@ -34,6 +34,9 @@
             <div class="ai-response-area">
                 <p class="label">AI:</p>
                 <div id="ai-response" class="response-box">
+                    <div class="interviewer-image-container"> <!-- ★追加: 画像コンテナ★ -->
+                        <img id="interviewer-image" src="{{ url_for('static', filename='images/female_interviewer.jpg') }}" alt="面接官の画像"> <!-- ★追加: 画像タグ★ -->
+                    </div>
                     <p id="ai-message">面接を開始します。準備ができたら「面接を開始」ボタンを押してください。</p>
                     <audio id="ai-audio" controls style="display: none;"></audio>
                 </div>
@@ -51,9 +54,9 @@
         </div>
 
         <div class="feedback-area">
-            <h2>フィードバック</h2> <!-- ★変更: タイトルを統一★ -->
-            <div id="feedback-log" class="feedback-box-style"> <!-- ★変更: IDをfeedback-logに統一★ -->
-                <p id="feedback-content">フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。</p> <!-- ★変更: IDをfeedback-contentに統一★ -->
+            <h2>フィードバック</h2>
+            <div id="feedback-log" class="feedback-box-style">
+                <p id="feedback-content">フィードバックボタンを押すか、面接終了後にここにフィードバックが表示されます。</p>
             </div>
         </div>
 
