@@ -49,12 +49,18 @@
                 </div>
                 <button id="record-btn" disabled>録音開始</button>
                 <button id="stop-record-btn" disabled>録音停止</button>
+                <button id="feedback-button" disabled>フィードバック</button> <!-- ★追加★ -->
             </div>
         </div>
 
         <div class="feedback-area">
+            <h2>現在のフィードバック</h2> <!-- ★変更★ -->
+            <div id="interim-feedback-log" class="feedback-box-style"> <!-- ★追加★ -->
+                <p id="interim-feedback">面接中にフィードバックボタンを押すと、ここに表示されます。</p>
+            </div>
+
             <h2>総括フィードバック</h2>
-            <div id="feedback-log">
+            <div id="final-feedback-log" class="feedback-box-style"> <!-- ★変更★ -->
                 <p id="final-feedback">面接終了後に総括フィードバックが表示されます。</p>
             </div>
         </div>
