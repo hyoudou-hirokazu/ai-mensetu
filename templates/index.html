@@ -34,8 +34,8 @@
             <div class="ai-response-area">
                 <p class="label">AI:</p>
                 <div id="ai-response" class="response-box">
-                    <div class="interviewer-image-container"> <!-- ★追加: 画像コンテナ★ -->
-                        <img id="interviewer-image" src="{{ url_for('static', filename='images/female_interviewer.jpg') }}" alt="面接官の画像"> <!-- ★追加: 画像タグ★ -->
+                    <div class="interviewer-image-container">
+                        <img id="interviewer-image" src="{{ url_for('static', filename='images/female_interviewer.jpg') }}" alt="面接官の画像">
                     </div>
                     <p id="ai-message">面接を開始します。準備ができたら「面接を開始」ボタンを押してください。</p>
                     <audio id="ai-audio" controls style="display: none;"></audio>
@@ -67,6 +67,10 @@
             </div>
         </div>
     </div>
+
+    <!-- ★追加: JavaScriptから画像パスを取得するための隠し要素★ -->
+    <input type="hidden" id="maleInterviewerImagePath" value="{{ url_for('static', filename='images/male_interviewer.jpg') }}">
+    <input type="hidden" id="femaleInterviewerImagePath" value="{{ url_for('static', filename='images/female_interviewer.jpg') }}">
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
