@@ -269,8 +269,9 @@ audio {
 }
 
 .interviewer-image {
-    width: 480px;
-    height: 480px;
+    width: 100%;
+    max-width: 100vw;
+    height: auto;
     object-fit: cover;
     border-radius: 50%;
     box-shadow: 0 4px 16px rgba(0,0,0,0.10);
