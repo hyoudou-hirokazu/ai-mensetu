@@ -645,3 +645,20 @@ audio {
     margin-top: 8px;
     border-radius: 8px;
 }
+/* クリックできない問題の暫定対策 */
+.main-content,
+.left-panel,
+.settings,
+.right-panel,
+.interview-area {
+    position: relative;
+    z-index: 1;
+}
+
+.settings select,
+.settings input[type="text"],
+.settings button {
+    z-index: 2;
+    position: relative;
+    pointer-events: auto;
+}
