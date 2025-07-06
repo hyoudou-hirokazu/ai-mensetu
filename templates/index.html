@@ -10,75 +10,91 @@
     <div class="container">
         <h1>AI面接トレーニング</h1>
 
-        <div class="settings">
-            <label for="interview-type">面接の種類:</label>
-            <select id="interview-type">
-                <option value="general">一般企業向け</option>
-                <option value="disability">障害者雇用向け（合理的配慮あり）</option>
-            </select>
+        <!-- メインコンテンツエリア -->
+        <div class="main-content">
+            <!-- 左半分：設定エリア -->
+            <div class="left-panel">
+                <div class="settings">
+                    <h2>面接設定</h2>
+                    
+                    <label for="interview-type">面接の種類:</label>
+                    <select id="interview-type">
+                        <option value="general">一般企業向け</option>
+                        <option value="disability">障害者雇用向け（合理的配慮あり）</option>
+                    </select>
 
-            <label for="voice-gender">面接官の声:</label>
-            <select id="voice-gender">
-                <option value="FEMALE">女性</option>
-                <option value="MALE">男性</option>
-            </select>
+                    <label for="voice-gender">面接官の声:</label>
+                    <select id="voice-gender">
+                        <option value="FEMALE">女性</option>
+                        <option value="MALE">男性</option>
+                    </select>
 
-            <!-- 面接官画像表示エリア -->
-            <div class="interviewer-image-area">
-                <img id="interviewer-image" src="{{ url_for('static', filename='interviewer_female.jpg') }}" alt="面接官画像" class="interviewer-image">
-            </div>
+                    <!-- 面接官画像表示エリア -->
+                    <div class="interviewer-image-area">
+                        <img id="interviewer-image" src="{{ url_for('static', filename='interviewer_female.jpg') }}" alt="面接官画像" class="interviewer-image">
+                    </div>
 
-            <button id="start-interview-btn">面接を開始</button>
-        </div>
-
-        <div class="status">
-            <p id="status-message">準備完了</p>
-        </div>
-
-        <div class="interview-area">
-            <div class="ai-response-area">
-                <p class="label">AI:</p>
-                <div id="ai-response" class="response-box">
-                    <p id="ai-message">面接を開始します。準備ができたら「面接を開始」ボタンを押してください。</p>
-                    <audio id="ai-audio" controls style="display: none;"></audio>
+                    <button id="start-interview-btn">面接を開始</button>
                 </div>
             </div>
 
-            <div class="user-input-area">
-                <p class="label">あなた:</p>
-                <div class="response-box">
-                    <p id="user-transcript"></p>
-                </div>
-                
-                <!-- 録音状態表示 -->
-                <div id="recording-indicator" class="recording-indicator">
-                    <span>録音中...</span>
-                    <div class="recording-wave">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
+            <!-- 右半分：会話エリア -->
+            <div class="right-panel">
+                <div class="interview-area">
+                    <div class="status">
+                        <p id="status-message">準備完了</p>
+                    </div>
+
+                    <div class="ai-response-area">
+                        <p class="label">AI:</p>
+                        <div id="ai-response" class="response-box">
+                            <p id="ai-message">面接を開始します。準備ができたら「面接を開始」ボタンを押してください。</p>
+                            <audio id="ai-audio" controls style="display: none;"></audio>
+                        </div>
+                    </div>
+
+                    <div class="user-input-area">
+                        <p class="label">あなた:</p>
+                        <div class="response-box">
+                            <p id="user-transcript"></p>
+                        </div>
+                        
+                        <!-- 録音状態表示 -->
+                        <div id="recording-indicator" class="recording-indicator">
+                            <span>録音中...</span>
+                            <div class="recording-wave">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group">
+                            <button id="record-btn" disabled>録音開始</button>
+                            <button id="stop-record-btn" disabled>録音停止</button>
+                            <button id="feedback-button" disabled>フィードバック</button>
+                        </div>
                     </div>
                 </div>
-                
-                <button id="record-btn" disabled>録音開始</button>
-                <button id="stop-record-btn" disabled>録音停止</button>
-                <button id="feedback-button" disabled>フィードバック</button>
             </div>
         </div>
 
-        <div class="feedback-area">
-            <h2>フィードバック</h2>
-            <div id="feedback-log" class="feedback-box-style">
-                <div id="feedback-content"></div>
+        <!-- スクロールエリア：フィードバックと会話履歴 -->
+        <div class="scroll-area">
+            <div class="feedback-area">
+                <h2>フィードバック</h2>
+                <div id="feedback-log" class="feedback-box-style">
+                    <div id="feedback-content"></div>
+                </div>
             </div>
-        </div>
 
-        <div class="conversation-history">
-            <h2>会話履歴</h2>
-            <div id="history-log">
-                <!-- 会話のログがここに追加されます -->
+            <div class="conversation-history">
+                <h2>会話履歴</h2>
+                <div id="history-log">
+                    <!-- 会話のログがここに追加されます -->
+                </div>
             </div>
         </div>
     </div>

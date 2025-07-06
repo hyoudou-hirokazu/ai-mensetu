@@ -28,24 +28,118 @@ body {
 
 .container {
     background: var(--background);
-    padding: 40px 0;
+    padding: 20px;
     min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
-/* === カード型レイアウト・余白最適化 === */
-.settings, .interview-area, .feedback-area, .conversation-history, .status {
+/* === メインコンテンツエリア === */
+.main-content {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+    min-height: 600px;
+}
+
+/* === 左パネル（設定エリア）=== */
+.left-panel {
+    flex: 0 0 350px;
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+.left-panel .settings {
     background: var(--card-bg);
     border-radius: 18px;
     box-shadow: var(--card-shadow);
     border: 1.5px solid var(--border);
-    margin: 0 auto 32px auto;
-    padding: 32px 28px;
-    max-width: 600px;
-    width: 95%;
+    padding: 28px;
     transition: box-shadow 0.2s;
 }
-.settings:hover, .interview-area:hover, .feedback-area:hover, .conversation-history:hover {
+
+.left-panel .settings:hover {
     box-shadow: 0 8px 32px rgba(79, 140, 255, 0.15);
+}
+
+/* === 右パネル（会話エリア）=== */
+.right-panel {
+    flex: 1;
+    min-width: 0;
+}
+
+.right-panel .interview-area {
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    border: 1.5px solid var(--border);
+    padding: 28px;
+    height: 100%;
+    transition: box-shadow 0.2s;
+}
+
+.right-panel .interview-area:hover {
+    box-shadow: 0 8px 32px rgba(79, 140, 255, 0.15);
+}
+
+/* === スクロールエリア === */
+.scroll-area {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.scroll-area .feedback-area,
+.scroll-area .conversation-history {
+    background: var(--card-bg);
+    border-radius: 18px;
+    box-shadow: var(--card-shadow);
+    border: 1.5px solid var(--border);
+    padding: 28px;
+    transition: box-shadow 0.2s;
+}
+
+.scroll-area .feedback-area:hover,
+.scroll-area .conversation-history:hover {
+    box-shadow: 0 8px 32px rgba(79, 140, 255, 0.15);
+}
+
+/* === ボタングループ === */
+.button-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.button-group button {
+    flex: 1;
+    min-width: 120px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1.08rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--button-gradient);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.10);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    letter-spacing: 0.01em;
+}
+
+.button-group button:hover {
+    background: var(--button-hover);
+    box-shadow: 0 4px 16px rgba(162, 89, 255, 0.13);
+    transform: translateY(-2px) scale(1.02);
+}
+
+.button-group button:disabled {
+    background: #dbeafe;
+    color: #b0b8c9;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
 }
 
 h1, h2 {
@@ -75,7 +169,7 @@ h1, h2 {
     box-shadow: 0 0 0 2px #c7d7ff;
 }
 
-.settings button, .user-input-area button, #feedback-button {
+.settings button {
     padding: 14px 0;
     border-radius: 8px;
     border: none;
@@ -90,12 +184,12 @@ h1, h2 {
     transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
     letter-spacing: 0.01em;
 }
-.settings button:hover, .user-input-area button:hover, #feedback-button:hover {
+.settings button:hover {
     background: var(--button-hover);
     box-shadow: 0 4px 16px rgba(162, 89, 255, 0.13);
     transform: translateY(-2px) scale(1.02);
 }
-.settings button:disabled, .user-input-area button:disabled, #feedback-button:disabled {
+.settings button:disabled {
     background: #dbeafe;
     color: #b0b8c9;
     cursor: not-allowed;
@@ -132,14 +226,47 @@ h1, h2 {
 }
 
 /* === レスポンシブ強化 === */
+@media (max-width: 1200px) {
+    .main-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .left-panel {
+        flex: none;
+        position: static;
+    }
+    
+    .left-panel .settings {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
-        padding: 18px 0;
+        padding: 12px;
     }
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        padding: 18px 8px;
-        max-width: 98vw;
+    
+    .main-content {
+        gap: 16px;
     }
+    
+    .left-panel .settings,
+    .right-panel .interview-area,
+    .scroll-area .feedback-area,
+    .scroll-area .conversation-history {
+        padding: 20px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button-group button {
+        min-width: auto;
+    }
+    
     h1 {
         font-size: 1.5rem;
     }
@@ -147,22 +274,33 @@ h1, h2 {
         font-size: 1.2rem;
     }
 }
+
 @media (max-width: 480px) {
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        padding: 10px 2px;
-        margin-bottom: 12px;
+    .container {
+        padding: 8px;
     }
+    
+    .left-panel .settings,
+    .right-panel .interview-area,
+    .scroll-area .feedback-area,
+    .scroll-area .conversation-history {
+        padding: 16px;
+    }
+    
     .response-box {
-        padding: 10px;
+        padding: 12px;
         font-size: 0.98rem;
     }
+    
     .settings select, .settings input[type="text"] {
         font-size: 0.98rem;
-        padding: 10px 8px;
+        padding: 12px;
     }
-    .settings button, .user-input-area button, #feedback-button {
+    
+    .settings button,
+    .button-group button {
         font-size: 1rem;
-        padding: 10px 0;
+        padding: 12px 0;
     }
 }
 
@@ -199,212 +337,167 @@ h1, h2 {
     font-weight: 500;
     font-size: 1.05rem;
     transition: color 0.2s;
-    padding: 8px 0;
-    border-bottom: 2px solid transparent;
 }
 .header .nav a:hover {
     color: var(--primary);
-    border-bottom: 2px solid var(--primary);
 }
 
-/* === 面接官画像・アイコンの最適化 === */
+/* === 面接官画像エリア === */
 .interviewer-image-area {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 24px 0;
-    padding: 20px;
-    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-    border-radius: 16px;
-    border: 2px solid #dee2e6;
-    box-shadow: 0 4px 24px rgba(162, 89, 255, 0.08);
-    position: relative;
-}
-.interviewer-image {
-    width: 220px;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 50%;
-    box-shadow: 0 8px 32px rgba(79, 140, 255, 0.18);
-    border: 4px solid #fff;
-    background: #fff;
-    transition: transform 0.3s, box-shadow 0.3s;
-    z-index: 1;
-}
-.interviewer-image-area::after {
-    content: '\1F464'; /* Unicode: 👤 */
-    position: absolute;
-    right: 24px;
-    bottom: 24px;
-    font-size: 2.2rem;
-    color: var(--accent);
-    opacity: 0.18;
-    z-index: 0;
-}
-.interviewer-image:hover {
-    transform: scale(1.07) rotate(-2deg);
-    box-shadow: 0 16px 48px rgba(162, 89, 255, 0.18);
-}
-
-/* === フィードバック表示の視覚的強化 === */
-.feedback-area #feedback-log {
-    border: 2px solid var(--primary);
-    background: linear-gradient(135deg, #f5faff 60%, #e3eafe 100%);
-    box-shadow: 0 2px 12px rgba(79, 140, 255, 0.07);
-    border-radius: 16px;
-    padding: 32px 24px;
-    min-height: 120px;
-    margin-top: 12px;
-}
-.feedback-score {
-    font-size: 2.2em;
-    font-weight: bold;
-    color: var(--primary-dark);
-    background: linear-gradient(90deg, #e3eafe 0%, #f5f7fa 100%);
-    border: 2.5px solid var(--primary);
-    border-radius: 14px;
-    padding: 18px 36px;
-    width: fit-content;
-    margin: 0 auto 28px auto;
-    display: block;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.10);
-    position: relative;
-    animation: fadeIn 0.7s;
+    margin: 20px 0;
+    padding: 16px;
+    background: linear-gradient(135deg, #f8faff 0%, #e3eafe 100%);
+    border-radius: 12px;
+    border: 1px solid var(--border);
 }
-.feedback-category {
-    font-size: 1.15em;
-    font-weight: bold;
-    margin-top: 24px;
-    margin-bottom: 10px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    background: var(--primary-dark);
-    box-shadow: 0 2px 8px rgba(79, 140, 255, 0.08);
-    animation: fadeInUp 0.7s;
-}
-.feedback-category.improve {
-    background: #e74c3c;
-}
-.feedback-category.summary {
-    background: #27ae60;
-}
-.feedback-example {
-    background: linear-gradient(90deg, #fff3e0 0%, #ffe0b2 100%);
-    border-left: 4px solid #ff9800;
-    padding: 14px 18px;
-    margin-top: 10px;
-    border-radius: 8px;
-    color: #e65100;
-    font-size: 1em;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.08);
-    position: relative;
-    animation: fadeIn 0.7s;
-}
-.feedback-category::before {
-    content: '💬';
-    margin-right: 8px;
-    font-size: 1.2em;
-}
-.feedback-category.improve::before {
-    content: '⚠';
-}
-.feedback-category.summary::before {
-    content: '📊';
-}
-.feedback-example::before {
-    content: '💡';
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #ff9800;
-    color: white;
+
+.interviewer-image {
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8em;
+    object-fit: cover;
+    border: 3px solid var(--primary);
+    box-shadow: 0 8px 24px rgba(79, 140, 255, 0.15);
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
-/* === アニメーション・マイクロインタラクション === */
+.interviewer-image-area::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(79, 140, 255, 0.1) 50%, transparent 70%);
+    border-radius: 50%;
+    animation: shimmer 2s infinite;
+}
+
+.interviewer-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(79, 140, 255, 0.25);
+}
+
+/* === フィードバックエリア === */
+.feedback-area #feedback-log {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f8faff;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.feedback-score {
+    display: inline-block;
+    background: var(--button-gradient);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.2em;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(79, 140, 255, 0.2);
+}
+
+.feedback-category {
+    background: #f0f4ff;
+    border-left: 4px solid var(--primary);
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 0 8px 8px 0;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.feedback-category.improve {
+    border-left-color: #ff6b6b;
+    background: #fff0f0;
+}
+
+.feedback-category.summary {
+    border-left-color: var(--secondary);
+    background: #f8f0ff;
+}
+
+.feedback-example {
+    background: #f8faff;
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    margin: 8px 0;
+    border-radius: 8px;
+    font-style: italic;
+    color: var(--text-sub);
+}
+
+.feedback-category::before {
+    content: '📋 ';
+    margin-right: 8px;
+}
+
+.feedback-category.improve::before {
+    content: '⚠️ ';
+}
+
+.feedback-category.summary::before {
+    content: '📝 ';
+}
+
+.feedback-example::before {
+    content: '💡 ';
+    margin-right: 8px;
+}
+
+/* === アニメーション === */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: none; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
+
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: none; }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
+
 button, .settings select, .settings input[type="text"] {
-    transition: box-shadow 0.2s, border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s;
+    font-family: inherit;
 }
+
 button:active {
-    transform: scale(0.97);
+    transform: translateY(1px) scale(0.98);
 }
 
-/* === レスポンシブデザイン強化 === */
-@media (max-width: 900px) {
-    .header .logo { margin-left: 12px; }
-    .header .nav { margin-right: 12px; gap: 12px; }
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        max-width: 98vw;
-        padding: 18px 8px;
-    }
-    .interviewer-image { width: 160px; height: 160px; }
-}
-@media (max-width: 600px) {
-    .header { flex-direction: column; min-height: 48px; }
-    .header .logo, .header .nav { margin: 0; }
-    .header .nav { gap: 8px; }
-    .settings, .interview-area, .feedback-area, .conversation-history, .status {
-        padding: 10px 2px;
-        margin-bottom: 12px;
-    }
-    .interviewer-image { width: 110px; height: 110px; }
-    .feedback-score { font-size: 1.2em; padding: 10px 12px; }
-    .feedback-category { font-size: 1em; padding: 6px 8px; }
-    .feedback-example { padding: 8px 8px; font-size: 0.95em; }
-}
-
-/* 録音状態視覚化 */
+/* === 録音インジケーター === */
 .recording-indicator {
     display: none;
     align-items: center;
-    justify-content: center;
-    margin: 16px 0;
-    padding: 12px;
-    background: #fff3cd;
-    border: 2px solid #ffeaa7;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fff0f0;
+    border: 1px solid #ff6b6b;
     border-radius: 8px;
-    color: #856404;
+    margin: 12px 0;
+    color: #d63031;
     font-weight: 600;
 }
 
 .recording-indicator.active {
     display: flex;
-    animation: pulse 1.5s infinite;
 }
 
 .recording-wave {
     display: flex;
     align-items: center;
-    margin-left: 12px;
+    gap: 2px;
 }
 
 .recording-wave span {
-    width: 4px;
+    width: 3px;
     height: 20px;
-    background: #e74c3c;
-    margin: 0 2px;
+    background: #ff6b6b;
     border-radius: 2px;
-    animation: wave 1s infinite ease-in-out;
+    animation: pulse 1s infinite;
 }
 
 .recording-wave span:nth-child(2) { animation-delay: 0.1s; }
@@ -413,127 +506,108 @@ button:active {
 .recording-wave span:nth-child(5) { animation-delay: 0.4s; }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-@keyframes wave {
     0%, 100% { height: 20px; }
     50% { height: 40px; }
 }
 
+@keyframes wave {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(10px); }
+}
+
+/* === フィードバックエリアの詳細スタイル === */
 .feedback-area h2 {
-    color: #2c3e50;
+    color: var(--primary-dark);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 8px;
     margin-bottom: 20px;
-    font-size: 1.5rem;
 }
 
 .feedback-area #feedback-log p {
-    margin-bottom: 12px;
+    margin: 8px 0;
     line-height: 1.6;
 }
 
-/* フィードバックスコア改善 */
 .feedback-score::before {
-    content: "評価点数";
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #2196f3;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.4em;
-    font-weight: 600;
+    content: '🎯 ';
+    margin-right: 8px;
 }
 
-/* フィードバックカテゴリー改善 */
 .feedback-category:not(.improve):not(.summary) {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    border-left: 6px solid #1f5f8b;
+    border-left-color: var(--primary);
+    background: #f0f4ff;
 }
 
 .feedback-category.improve::before {
-    content: "⚠";
+    content: '⚠️ ';
 }
 
 .feedback-category.summary::before {
-    content: "📊";
+    content: '📝 ';
 }
 
 .feedback-example {
-    background: linear-gradient(135deg, #fff3e0, #ffe0b2);
-    border-left: 4px solid #ff9800;
-    padding: 16px 20px;
-    margin-top: 12px;
+    background: #f8faff;
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    margin: 8px 0;
     border-radius: 8px;
-    color: #e65100;
-    font-size: 1em;
-    font-weight: 600;
-    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
+    font-style: italic;
+    color: var(--text-sub);
     position: relative;
 }
 
 .feedback-example::before {
-    content: "💡";
-    position: absolute;
-    left: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #ff9800;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8em;
+    content: '💡 ';
+    margin-right: 8px;
+    font-style: normal;
 }
 
+/* === 会話履歴エリア === */
 #feedback-content p {
-    margin-bottom: 12px;
-    margin-top: 0;
-    font-size: 1.05em;
-    line-height: 1.6;
-    color: #2c3e50;
+    margin: 8px 0;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
 }
 
 .conversation-history #history-log {
-    max-height: 300px;
+    max-height: 400px;
     overflow-y: auto;
-    border: 2px solid #e1e8ed;
-    padding: 18px;
-    background: #f8f9fa;
+    padding: 16px;
+    background: #f8faff;
     border-radius: 8px;
+    border: 1px solid var(--border);
 }
 
 .conversation-history .entry {
-    margin-bottom: 12px;
-    padding: 10px 0;
-    border-bottom: 1px dashed #dee2e6;
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid var(--border);
 }
 
 .conversation-history .entry:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .conversation-history .entry .role {
     font-weight: 600;
-    margin-right: 8px;
+    margin-bottom: 8px;
+    font-size: 0.9em;
 }
 
 .conversation-history .entry.ai .role {
-    color: #3498db;
+    color: var(--primary);
 }
 
 .conversation-history .entry.user .role {
-    color: #27ae60;
+    color: var(--secondary);
 }
 
+/* === 音声プレイヤー === */
 audio {
     width: 100%;
-    margin-top: 12px;
+    margin-top: 8px;
     border-radius: 8px;
 }
