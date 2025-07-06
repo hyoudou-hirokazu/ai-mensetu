@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const interviewerImageArea = document.getElementById('interviewer-image-area');
     const waveAnimation = document.getElementById('wave-animation');
     const talkingText = document.getElementById('talking-text');
+    const pageTitle = document.getElementById('page-title');
 
     // 要素の存在確認
     console.log('interviewTypeSelect:', interviewTypeSelect);
@@ -416,6 +417,12 @@ document.addEventListener('DOMContentLoaded', () => {
             interviewerImageArea.classList.remove('interviewer-talking');
             waveAnimation.style.display = 'none';
             talkingText.style.display = 'none';
+        });
+    }
+
+    if (pageTitle) {
+        pageTitle.addEventListener('click', function() {
+            location.reload();
         });
     }
 });

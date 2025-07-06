@@ -708,3 +708,7 @@ audio {
     margin-top: 4px;
     font-weight: bold;
 }
+
+#page-title {
+    cursor: pointer;
+}
