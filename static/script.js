@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMが読み込まれました');
+    
     const interviewTypeSelect = document.getElementById('interview-type');
     const voiceGenderSelect = document.getElementById('voice-gender');
     const startInterviewBtn = document.getElementById('start-interview-btn');
@@ -13,6 +15,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyLogElem = document.getElementById('history-log');
     const interviewerImageElem = document.getElementById('interviewer-image');
     const recordingIndicator = document.getElementById('recording-indicator');
+
+    // 要素の存在確認
+    console.log('interviewTypeSelect:', interviewTypeSelect);
+    console.log('voiceGenderSelect:', voiceGenderSelect);
+    console.log('interviewerImageElem:', interviewerImageElem);
+
+    // 面接官の画像を更新する関数
+    function updateInterviewerImage() {
+        const voiceGender = voiceGenderSelect.value;
+        console.log('面接官の画像を更新中。選択された声:', voiceGender);
+        
+        if (voiceGender === 'FEMALE') {
+            interviewerImageElem.src = '/static/interviewer_female.jpg';
+            console.log('女性面接官の画像に変更');
+        } else if (voiceGender === 'MALE') {
+            interviewerImageElem.src = '/static/interviewer_male.jpg';
+            console.log('男性面接官の画像に変更');
+        }
+    }
+
+    // 面接の種類と面接官の声の選択イベント
+    if (interviewTypeSelect) {
+        interviewTypeSelect.addEventListener('change', () => {
+            console.log('面接の種類が変更されました:', interviewTypeSelect.value);
+            updateInterviewerImage();
+        });
+    } else {
+        console.error('interviewTypeSelectが見つかりません');
+    }
+
+    if (voiceGenderSelect) {
+        voiceGenderSelect.addEventListener('change', () => {
+            console.log('面接官の声が変更されました:', voiceGenderSelect.value);
+            updateInterviewerImage();
+        });
+    } else {
+        console.error('voiceGenderSelectが見つかりません');
+    }
+
+    // 初期化時に面接官の画像を設定
+    if (interviewerImageElem) {
+        updateInterviewerImage();
+    } else {
+        console.error('interviewerImageElemが見つかりません');
+    }
 
     // UI初期状態設定
     function resetUI() {
@@ -38,6 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
         console.log('「面接を開始」ボタンがクリックされました。');
+        console.log('選択された面接の種類:', interviewTypeSelect.value);
+        console.log('選択された面接官の声:', voiceGenderSelect.value);
+        
         resetUI(); // 新しい面接開始時にUIをリセット
         const interviewType = interviewTypeSelect.value;
         const voiceGender = voiceGenderSelect.value; // 面接官の音声性別を取得
@@ -342,17 +392,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return formattedHtml;
     }
-
-    // 面接官画像切り替え
-    voiceGenderSelect.addEventListener('change', () => {
-        if (voiceGenderSelect.value === 'FEMALE') {
-            interviewerImageElem.src = '/static/interviewer_female.jpg';
-            interviewerImageElem.alt = '女性面接官';
-        } else {
-            interviewerImageElem.src = '/static/interviewer_male.jpg';
-            interviewerImageElem.alt = '男性面接官';
-        }
-    });
 
     // 録音状態の視覚化制御
     function showRecordingIndicator() {
