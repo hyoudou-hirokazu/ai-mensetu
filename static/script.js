@@ -401,4 +401,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function hideRecordingIndicator() {
         recordingIndicator.classList.remove('active');
     }
+
+    const aiAudio = document.getElementById('ai-audio');
+    const interviewerImage = document.getElementById('interviewer-image');
+    if (aiAudio && interviewerImage) {
+        aiAudio.addEventListener('play', () => {
+            interviewerImage.classList.add('talking');
+        });
+        aiAudio.addEventListener('ended', () => {
+            interviewerImage.classList.remove('talking');
+        });
+    }
 });
