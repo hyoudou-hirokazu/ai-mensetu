@@ -30,8 +30,12 @@
                     </select>
 
                     <!-- 面接官画像表示エリア -->
-                    <div class="interviewer-image-area">
+                    <div class="interviewer-image-area" id="interviewer-image-area">
                         <img id="interviewer-image" src="{{ url_for('static', filename='interviewer_female.jpg') }}" alt="面接官画像" class="interviewer-image">
+                        <div id="wave-animation" class="wave-animation" style="display:none;">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                        <div id="talking-text" class="talking-text" style="display:none;">話しています…</div>
                     </div>
 
                     <button id="start-interview-btn">面接を開始</button>

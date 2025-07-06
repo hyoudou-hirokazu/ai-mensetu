@@ -494,18 +494,6 @@ h1, h2 {
     to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes talking-effect {
-  0%   { transform: translateY(0); }
-  20%  { transform: translateY(-5px); }
-  40%  { transform: translateY(5px); }
-  60%  { transform: translateY(-5px); }
-  80%  { transform: translateY(5px); }
-  100% { transform: translateY(0); }
-}
-.talking {
-  animation: talking-effect 0.6s infinite;
-}
-
 button, .settings select, .settings input[type="text"] {
     font-family: inherit;
 }
@@ -673,4 +661,47 @@ audio {
     z-index: 2;
     position: relative;
     pointer-events: auto;
+}
+
+/* 面接官が話している間の枠・背景色 */
+#interviewer-image-area.interviewer-talking {
+    border: 3px solid #4fc3f7;
+    background: #e3f2fd;
+    border-radius: 16px;
+    transition: border 0.2s, background 0.2s;
+}
+
+/* 音声波形アニメーション */
+.wave-animation {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 24px;
+    margin-top: 8px;
+    gap: 3px;
+}
+.wave-animation span {
+    display: block;
+    width: 4px;
+    height: 12px;
+    background: #4fc3f7;
+    border-radius: 2px;
+    animation: wave 1s infinite ease-in-out;
+}
+.wave-animation span:nth-child(1) { animation-delay: 0s; }
+.wave-animation span:nth-child(2) { animation-delay: 0.2s; }
+.wave-animation span:nth-child(3) { animation-delay: 0.4s; }
+.wave-animation span:nth-child(4) { animation-delay: 0.2s; }
+.wave-animation span:nth-child(5) { animation-delay: 0s; }
+@keyframes wave {
+    0%, 100% { height: 12px; }
+    50% { height: 24px; }
+}
+
+.talking-text {
+    text-align: center;
+    color: #1976d2;
+    font-size: 14px;
+    margin-top: 4px;
+    font-weight: bold;
 }

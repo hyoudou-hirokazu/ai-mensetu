@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyLogElem = document.getElementById('history-log');
     const interviewerImageElem = document.getElementById('interviewer-image');
     const recordingIndicator = document.getElementById('recording-indicator');
+    const aiAudio = document.getElementById('ai-audio');
+    const interviewerImageArea = document.getElementById('interviewer-image-area');
+    const waveAnimation = document.getElementById('wave-animation');
+    const talkingText = document.getElementById('talking-text');
 
     // 要素の存在確認
     console.log('interviewTypeSelect:', interviewTypeSelect);
@@ -402,14 +406,16 @@ document.addEventListener('DOMContentLoaded', () => {
         recordingIndicator.classList.remove('active');
     }
 
-    const aiAudio = document.getElementById('ai-audio');
-    const interviewerImage = document.getElementById('interviewer-image');
-    if (aiAudio && interviewerImage) {
+    if (aiAudio && interviewerImageArea && waveAnimation && talkingText) {
         aiAudio.addEventListener('play', () => {
-            interviewerImage.classList.add('talking');
+            interviewerImageArea.classList.add('interviewer-talking');
+            waveAnimation.style.display = 'flex';
+            talkingText.style.display = 'block';
         });
         aiAudio.addEventListener('ended', () => {
-            interviewerImage.classList.remove('talking');
+            interviewerImageArea.classList.remove('interviewer-talking');
+            waveAnimation.style.display = 'none';
+            talkingText.style.display = 'none';
         });
     }
 });
