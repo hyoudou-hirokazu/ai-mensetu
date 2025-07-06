@@ -23,4 +23,4 @@ EXPOSE 8080
 # Flaskの開発サーバーは本番環境には不向きなので、GunicornなどのWSGIサーバーを使うのが一般的ですが
 # Cloud Runはリクエスト駆動でスケールするため、軽量なFlask内蔵サーバーでも動作可能です
 # 小規模な無料枠運用であればFlask内蔵サーバーで問題ありません
-CMD ["python", "app.py"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080"]
