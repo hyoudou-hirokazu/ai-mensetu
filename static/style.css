@@ -17,8 +17,8 @@
 }
 
 body {
-    font-family: 'Segoe UI', 'BIZ UDGothic', 'Meiryo UI', sans-serif;
-    line-height: 1.6;
+    font-family: 'Inter', 'Noto Sans JP', 'Segoe UI', 'BIZ UDGothic', 'Meiryo UI', sans-serif;
+    line-height: 1.7;
     color: var(--text-main);
     background: linear-gradient(135deg, #e3eafe 0%, #f5f7fa 100%);
     margin: 0;
@@ -28,10 +28,12 @@ body {
 
 .container {
     background: var(--background);
-    padding: 20px;
+    padding: 32px 20px 20px 20px;
     min-height: 100vh;
     max-width: 1400px;
     margin: 0 auto;
+    border-radius: 32px;
+    box-shadow: 0 8px 32px rgba(79, 140, 255, 0.10);
 }
 
 /* === メインコンテンツエリア === */
@@ -149,12 +151,14 @@ h1, h2 {
     margin-bottom: 28px;
     font-weight: 700;
     letter-spacing: 0.02em;
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    text-shadow: 0 2px 8px rgba(79,140,255,0.08);
 }
 
 /* === ボタン・入力欄のデザイン改善 === */
 .settings select, .settings input[type="text"] {
     padding: 14px 18px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: 1.5px solid var(--border);
     font-size: 1.08rem;
     width: 100%;
@@ -167,11 +171,6 @@ h1, h2 {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f8cff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    padding-right: 40px;
 }
 
 .settings select:focus, .settings input[type="text"]:focus {
@@ -235,8 +234,8 @@ h1, h2 {
 /* === その他の余白・テキスト調整 === */
 .settings label {
     font-weight: 600;
-    margin-bottom: 8px;
-    color: var(--text-main);
+    color: var(--primary-dark);
+    margin-bottom: 6px;
     display: block;
 }
 
@@ -440,22 +439,43 @@ h1, h2 {
 
 .feedback-category {
     background: #f0f4ff;
-    border-left: 4px solid var(--primary);
-    padding: 12px 16px;
-    margin: 12px 0;
-    border-radius: 0 8px 8px 0;
+    border-left: 5px solid var(--primary);
+    padding: 14px 18px;
+    margin: 14px 0;
+    border-radius: 0 12px 12px 0;
     font-weight: 600;
     color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.08rem;
 }
-
 .feedback-category.improve {
     border-left-color: #ff6b6b;
     background: #fff0f0;
+    color: #d63031;
 }
-
 .feedback-category.summary {
     border-left-color: var(--secondary);
     background: #f8f0ff;
+    color: #7c3aed;
+}
+.feedback-category::before {
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-right: 8px;
+}
+.feedback-category.improve::before {
+    content: '\f071'; /* fa-triangle-exclamation */
+    color: #ff6b6b;
+}
+.feedback-category.summary::before {
+    content: '\f303'; /* fa-pen-to-square */
+    color: #7c3aed;
+}
+.feedback-category:not(.improve):not(.summary)::before {
+    content: '\f058'; /* fa-circle-check */
+    color: #4f8cff;
 }
 
 .feedback-example {
@@ -466,24 +486,18 @@ h1, h2 {
     border-radius: 8px;
     font-style: italic;
     color: var(--text-sub);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
-
-.feedback-category::before {
-    content: '📋 ';
-    margin-right: 8px;
-}
-
-.feedback-category.improve::before {
-    content: '⚠️ ';
-}
-
-.feedback-category.summary::before {
-    content: '📝 ';
-}
-
 .feedback-example::before {
-    content: '💡 ';
+    content: '\f0eb'; /* fa-lightbulb */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: #ffd600;
     margin-right: 8px;
+    font-style: normal;
 }
 
 /* === アニメーション === */
@@ -710,5 +724,20 @@ audio {
 }
 
 #page-title {
+    font-size: 2.4rem;
+    margin-bottom: 40px;
+    background: linear-gradient(90deg, #4f8cff 0%, #a259ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
     cursor: pointer;
+    transition: text-shadow 0.2s;
+}
+#page-title:hover {
+    text-shadow: 0 4px 16px rgba(162, 89, 255, 0.18);
 }
