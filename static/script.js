@@ -148,7 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
     recordBtn.addEventListener('click', async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+            // ビットレートを16kbpsに設定
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus', bitsPerSecond: 16000 });
             audioChunks = [];
 
             mediaRecorder.ondataavailable = event => {
