@@ -86,6 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
+    // 最大録音時間（3分=180秒）
+    let recordTimer = null;
+    let recordSeconds = 0;
+    const MAX_RECORD_SECONDS = 180;
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
@@ -177,6 +181,20 @@ document.addEventListener('DOMContentLoaded', () => {
             aiAudioElem.style.display = 'none'; // AIの音声を非表示に
             feedbackContentElem.innerHTML = 'フィードバックを生成中...'; // フィードバックエリアを更新
             showRecordingIndicator();
+
+            // タイマー開始
+            recordSeconds = 0;
+            recordTimer = setInterval(() => {
+                recordSeconds++;
+                if (recordSeconds >= MAX_RECORD_SECONDS) {
+                    if (isRecording) {
+                        mediaRecorder.stop();
+                        isRecording = false;
+                        clearInterval(recordTimer);
+                        recordTimer = null;
+                    }
+                }
+            }, 1000);
         } catch (error) {
             console.error('マイクアクセスエラー:', error);
             statusMessageElem.textContent = 'マイクへのアクセスが拒否されました。';
@@ -197,6 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackButton.disabled = true; // 音声処理中はフィードバックボタンを無効化
             statusMessageElem.textContent = '音声を処理中...';
             hideRecordingIndicator();
+            // タイマー解除
+            if (recordTimer) {
+                clearInterval(recordTimer);
+                recordTimer = null;
+            }
         }
     });
 
