@@ -96,6 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recordTimeElem.id = 'record-time-info';
     recordTimeElem.style.margin = '8px 0';
     recordTimeElem.style.color = '#1976d2';
+    // 「録音開始」ボタンの直下に注意書きを移動
     recordBtn.parentNode.insertBefore(recordTimeElem, recordBtn.nextSibling);
     recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
 
@@ -144,9 +145,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 addHistory('AI', data.message);
 
+                // 録音・フィードバックボタンを常に有効化
+                recordBtn.disabled = false;
+                feedbackButton.disabled = false;
+                statusMessageElem.textContent = '録音可能です。';
+
                 aiAudioElem.onended = () => {
+                    // AI音声終了後もボタンは有効のまま
                     recordBtn.disabled = false;
-                    feedbackButton.disabled = false; // AIが話し終わったらフィードバックボタンも有効化
+                    feedbackButton.disabled = false;
                     statusMessageElem.textContent = '録音可能です。';
                 };
 
@@ -206,7 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
             isRecording = true;
             recordBtn.disabled = true;
             stopRecordBtn.disabled = false;
-            feedbackButton.disabled = true; // 録音中はフィードバックボタンを無効化
+            // フィードバックボタンは常に有効化
+            feedbackButton.disabled = false;
             statusMessageElem.textContent = '録音中...';
             userTranscriptElem.textContent = '（録音中...）';
             aiMessageElem.textContent = 'AI: （あなたの回答を待っています）'; // AIのメッセージを更新
@@ -245,9 +253,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mediaRecorder && isRecording) {
             mediaRecorder.stop();
             isRecording = false;
-            recordBtn.disabled = true; // 音声処理中は録音ボタンを無効化
+            recordBtn.disabled = false; // 停止後すぐ録音再開可能
             stopRecordBtn.disabled = true;
-            feedbackButton.disabled = true; // 音声処理中はフィードバックボタンを無効化
+            // フィードバックボタンは常に有効化
+            feedbackButton.disabled = false;
             statusMessageElem.textContent = '音声を処理中...';
             hideRecordingIndicator();
             // タイマー解除
@@ -319,8 +328,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     endInterview();
                 } else {
                     aiAudioElem.onended = () => {
+                        // AI音声終了後もボタンは有効のまま
                         recordBtn.disabled = false;
-                        feedbackButton.disabled = false; // AIが話し終わったらフィードバックボタンも有効化
+                        feedbackButton.disabled = false;
                         statusMessageElem.textContent = '録音可能です。';
                     };
                 }
