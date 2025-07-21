@@ -86,10 +86,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let mediaRecorder;
     let audioChunks = [];
     let isRecording = false;
-    // 最大録音時間（3分=180秒）
     let recordTimer = null;
     let recordSeconds = 0;
     const MAX_RECORD_SECONDS = 180;
+    let currentStream = null; // 録音中のstreamを保持
+
+    // 録音時間表示用要素を追加
+    let recordTimeElem = document.createElement('div');
+    recordTimeElem.id = 'record-time-info';
+    recordTimeElem.style.margin = '8px 0';
+    recordTimeElem.style.color = '#1976d2';
+    recordBtn.parentNode.insertBefore(recordTimeElem, recordBtn.nextSibling);
+    recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
+
+    function updateRecordTimeUI() {
+        recordTimeElem.textContent = `録音中: ${recordSeconds}秒 / 最大180秒（3分）`;
+    }
+    function resetRecordTimeUI() {
+        recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
+    }
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
@@ -152,16 +167,33 @@ document.addEventListener('DOMContentLoaded', () => {
     recordBtn.addEventListener('click', async () => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            // ビットレートを24kbpsに設定
-            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus', bitsPerSecond: 24000 });
+            currentStream = stream;
+            // ビットレートを16kbpsに設定（assertionと同じ）
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus', bitsPerSecond: 16000 });
             audioChunks = [];
 
             mediaRecorder.ondataavailable = event => {
                 audioChunks.push(event.data);
             };
 
+            mediaRecorder.onerror = (e) => {
+                console.error('MediaRecorderエラー:', e);
+                statusMessageElem.textContent = '録音中にエラーが発生しました。ブラウザやマイク設定をご確認ください。';
+            };
+
             mediaRecorder.onstop = async () => {
+                console.log('MediaRecorder onstop発火。録音秒数:', recordSeconds);
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                    currentStream = null;
+                }
+                if (recordTimer) {
+                    clearInterval(recordTimer);
+                    recordTimer = null;
+                }
+                resetRecordTimeUI();
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm; codecs=opus' });
+                console.log('録音データサイズ:', audioBlob.size, 'bytes');
                 const reader = new FileReader();
                 reader.readAsDataURL(audioBlob);
                 reader.onloadend = async () => {
@@ -184,14 +216,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // タイマー開始
             recordSeconds = 0;
+            updateRecordTimeUI();
             recordTimer = setInterval(() => {
                 recordSeconds++;
+                updateRecordTimeUI();
                 if (recordSeconds >= MAX_RECORD_SECONDS) {
                     if (isRecording) {
                         mediaRecorder.stop();
                         isRecording = false;
                         clearInterval(recordTimer);
                         recordTimer = null;
+                        statusMessageElem.textContent = '最大録音時間（3分）に達したため自動停止しました。';
                     }
                 }
             }, 1000);
@@ -219,6 +254,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (recordTimer) {
                 clearInterval(recordTimer);
                 recordTimer = null;
+            }
+            resetRecordTimeUI();
+            // streamのtrackも停止
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
             }
         }
     });
