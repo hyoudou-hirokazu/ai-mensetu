@@ -91,21 +91,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_RECORD_SECONDS = 180;
     let currentStream = null; // 録音中のstreamを保持
 
-    // 録音時間表示用要素を追加
-    let recordTimeElem = document.createElement('div');
-    recordTimeElem.id = 'record-time-info';
-    recordTimeElem.style.margin = '8px 0';
-    recordTimeElem.style.color = '#1976d2';
-    // 「録音開始」ボタンの直下に注意書きを移動
-    recordBtn.parentNode.insertBefore(recordTimeElem, recordBtn.nextSibling);
-    recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
+    // 録音時間表示用要素を追加（この処理を削除）
+    // let recordTimeElem = document.createElement('div');
+    // recordTimeElem.id = 'record-time-info';
+    // recordTimeElem.style.margin = '8px 0';
+    // recordTimeElem.style.color = '#1976d2';
+    // recordBtn.parentNode.insertBefore(recordTimeElem, recordBtn.nextSibling);
+    // recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
 
-    function updateRecordTimeUI() {
-        recordTimeElem.textContent = `録音中: ${recordSeconds}秒 / 最大180秒（3分）`;
-    }
-    function resetRecordTimeUI() {
-        recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
-    }
+    // function updateRecordTimeUI() {
+    //     recordTimeElem.textContent = `録音中: ${recordSeconds}秒 / 最大180秒（3分）`;
+    // }
+    // function resetRecordTimeUI() {
+    //     recordTimeElem.textContent = '※最大録音時間は3分（180秒）です';
+    // }
 
     // 面接開始ボタンのクリックイベント
     startInterviewBtn.addEventListener('click', async () => {
@@ -198,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     clearInterval(recordTimer);
                     recordTimer = null;
                 }
-                resetRecordTimeUI();
+                // resetRecordTimeUI(); // この関数は削除されたため、ここでは何もしない
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm; codecs=opus' });
                 console.log('録音データサイズ:', audioBlob.size, 'bytes');
                 const reader = new FileReader();
@@ -224,10 +223,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // タイマー開始
             recordSeconds = 0;
-            updateRecordTimeUI();
+            // updateRecordTimeUI(); // この関数は削除されたため、ここでは何もしない
             recordTimer = setInterval(() => {
                 recordSeconds++;
-                updateRecordTimeUI();
+                // updateRecordTimeUI(); // この関数は削除されたため、ここでは何もしない
                 if (recordSeconds >= MAX_RECORD_SECONDS) {
                     if (isRecording) {
                         mediaRecorder.stop();
@@ -264,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(recordTimer);
                 recordTimer = null;
             }
-            resetRecordTimeUI();
+            // resetRecordTimeUI(); // この関数は削除されたため、ここでは何もしない
             // streamのtrackも停止
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
